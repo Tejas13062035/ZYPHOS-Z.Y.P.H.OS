@@ -1,4 +1,6 @@
 import sys
+import os
+from core.daemon import start as daemon_start
 from core.scheduler import schedule_every, schedule_at, launch_background
 from core.planner import plan
 from core.executor import execute_task
@@ -53,6 +55,17 @@ def main():
             schedule_at(goal, at)
         else:
             print("ERROR: --schedule needs --every SECONDS or --at HH:MM")
+        return
+
+    if sys.argv[1] == "--daemon":
+        daemon_start()
+        return
+
+    if sys.argv[1] == "--send":
+        goal = " ".join(sys.argv[2:])
+        with open(os.path.expanduser("~/zyp/state/pending_goals.txt"), "a") as f:
+            f.write(goal + "\n")
+        print(f"SENT: {goal}")
         return
 
     goals = sys.argv[1:]
