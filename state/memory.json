@@ -41,5 +41,38 @@
         }
       }
     ]
+  },
+  {
+    "timestamp": "2026-04-07T16:33:58.922487",
+    "goal": "screenshot",
+    "tasks": [
+      {
+        "id": "1c05758d",
+        "description": "screenshot",
+        "status": "done",
+        "result": {
+          "status": "screenshot taken",
+          "has_image": true
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-04-07T16:33:59.039086",
+    "goal": "hotkey alt tab",
+    "tasks": [
+      {
+        "id": "fb10ac38",
+        "description": "hotkey alt tab",
+        "status": "done",
+        "result": {
+          "keys": [
+            "alt",
+            "tab"
+          ],
+          "status": "hotkey_sent"
+        }
+      }
+    ]
   }
 ]
