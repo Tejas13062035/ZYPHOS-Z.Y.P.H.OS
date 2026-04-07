@@ -13,5 +13,33 @@
         }
       }
     ]
+  },
+  {
+    "timestamp": "2026-04-07T16:02:07.560568",
+    "goal": "--status",
+    "tasks": []
+  },
+  {
+    "timestamp": "2026-04-07T16:20:25.790536",
+    "goal": "hotkey alt tab",
+    "tasks": []
+  },
+  {
+    "timestamp": "2026-04-07T16:23:07.204262",
+    "goal": "hotkey alt tab",
+    "tasks": [
+      {
+        "id": "c5a3a82d",
+        "description": "hotkey alt tab",
+        "status": "done",
+        "result": {
+          "keys": [
+            "alt",
+            "tab"
+          ],
+          "status": "hotkey_sent"
+        }
+      }
+    ]
   }
 ]
