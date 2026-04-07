@@ -1,4 +1,5 @@
 import sys
+from core.scheduler import schedule_every, schedule_at, launch_background
 from core.planner import plan
 from core.executor import execute_task
 from memory.store import save, recall
@@ -33,6 +34,25 @@ def main():
         print(f"MEMORY RECALL: {query}")
         for e in entries:
             print(f"  [{e['timestamp']}] {e['goal']}")
+        return
+
+    if sys.argv[1] == "--schedule":
+        goal = sys.argv[2]
+        every = None
+        at = None
+        bg = "--bg" in sys.argv
+        if "--every" in sys.argv:
+            every = int(sys.argv[sys.argv.index("--every") + 1])
+        if "--at" in sys.argv:
+            at = sys.argv[sys.argv.index("--at") + 1]
+        if bg:
+            launch_background(goal, every=every, at=at)
+        elif every:
+            schedule_every(goal, every)
+        elif at:
+            schedule_at(goal, at)
+        else:
+            print("ERROR: --schedule needs --every SECONDS or --at HH:MM")
         return
 
     goals = sys.argv[1:]
