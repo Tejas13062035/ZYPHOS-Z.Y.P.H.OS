@@ -1,0 +1,131 @@
+Z.Y.P.H.O.S — MASTER CHANGELOG
+================================
+
+IDENTITY
+- Project: Z.Y.P.H.O.S (Jarvis-like cognitive OS / LLM operating layer)
+- Builder: Tejas (goes by Zyphos), 18yo, INTJ, independent researcher
+- Assistant identity: Crown1
+- Use "we" not "me" when discussing achievements
+- No motivation, no philosophy unless asked — direct and technical only
+
+VISION
+- Z.Y.P.H.O.S is an autonomous orchestration layer that sits between LLMs and any software
+- It understands software purpose, reads UI, operates applications autonomously
+- Target: runs 24/7, portable on external SSD, operates multiple machines via sidecar
+- Closest reference: Jarvis from Iron Man
+- End goal: give it a goal in plain English, it figures out and executes everything
+
+HARDWARE
+- Current: HP Pavilion 15, i5-8250U, 8GB RAM, Intel Iris Xe
+- Main machine (arriving ~2 months): Ryzen 9 9955HX, 24GB RAM, RTX 5050
+- External SSD: Seagate Ultra Compact 1TB (not yet purchased)
+- LM Studio running Phi-3.5-mini-instruct on Windows (localhost:1234)
+
+OS SETUP
+- Windows retained for college work
+- Linux via WSL2, Ubuntu 22.04
+- All development inside ~/zyp/
+- PYTHONPATH=~/zyp set in ~/.bashrc
+- venv active at ~/zyp/venv/
+
+PROJECT DIRECTORY
+~/zyp/
+├── core/
+│   ├── logger.py
+│   ├── state.py
+│   ├── tasks.py
+│   ├── critic.py
+│   ├── planner.py
+│   ├── llm.py
+│   └── registry.py
+├── tools/
+│   ├── filesystem.py
+│   ├── shell.py
+│   └── sidecar.py
+├── memory/
+│   └── memory.py
+├── scripts/
+│   └── run.py
+├── state/
+│   ├── zyphos_state.json
+│   ├── tasks.json
+│   └── screenshots/
+├── logs/
+│   └── zyphos.log
+├── venv/
+├── zyphos.py  ← MAIN ENTRY POINT
+└── .git/
+
+INSTALLED PACKAGES (venv)
+- rich, pydantic, numpy, faiss-cpu
+- sentence-transformers, requests, pillow, mss
+
+WINDOWS SIDECAR
+- Location: C:\zyphos_sidecar\sidecar.py
+- Run on Windows before using CLI: python C:\zyphos_sidecar\sidecar.py
+- Exposes: /status, /screenshot, /click, /type
+- Port: 5000
+
+COMPLETED MODULES
+✅ Logger (core/logger.py) — Rich output + file logging, third-party noise suppressed
+✅ Persistent state (core/state.py) — ZypState with save/load JSON
+✅ Task queue (core/tasks.py) — add/mark/next with persist
+✅ Critic (core/critic.py) — evaluates task pass/fail
+✅ Planner (core/planner.py) — LLM generates tasks from plain English goal
+✅ LLM brain (core/llm.py) — Phi-3.5 via LM Studio, timeout=120, max_tokens=150
+✅ Tool registry (core/registry.py) — all tools catalogued
+✅ Filesystem tool (tools/filesystem.py) — read/write/list/delete
+✅ Shell tool (tools/shell.py) — run any bash command
+✅ Sidecar client (tools/sidecar.py) — screenshot/click/type via Windows sidecar
+✅ Vector memory (memory/memory.py) — FAISS + sentence-transformers, 22+ entries
+✅ CLI entry point (zyphos.py) — full autonomous goal execution
+
+CLI USAGE
+  python zyphos.py "your goal here"
+  python zyphos.py --status
+  python zyphos.py --memory "what have you done?"
+
+HOW IT WORKS
+1. User types goal via CLI
+2. Planner sends goal to Phi-3.5 → gets JSON task list back
+3. Executor runs each task using keyword matching → shell/filesystem/sidecar
+4. Critic evaluates each result (pass/fail)
+5. Memory stores result as vector embedding
+6. State saved to disk — resumes after shutdown
+
+KNOWN ISSUES / DEFERRED
+- Smart LLM executor deferred to main machine (two LLM calls too slow on 8GB)
+- Vision/OCR deferred to main machine (RAM pressure)
+- Voice layer deferred to main machine
+- Keyword executor works well for now
+
+CURRENT ISSUE TO FIX
+- zyphos.py may have leftover "from core.executor import Executor" line
+- run() function should use local execute() not executor.run()
+- Fix this first in new session
+
+NEXT SESSION PRIORITIES
+1. Fix zyphos.py if broken (remove executor import, restore run function)
+2. Sidecar upgrade (scroll, drag, key combinations)
+3. Multi-goal queue
+4. Scheduled tasks
+5. Always-on background service
+
+ROADMAP PHASES
+Phase 1 — Skeleton ✅ DONE
+Phase 2 — Perception & Control (in progress)
+  ✅ Screenshot via sidecar
+  ✅ Click/type via sidecar
+  ⬜ Scroll, drag, hotkeys
+  ⬜ Always-on service
+Phase 3 — Voice (main machine)
+Phase 4 — Vision & App Intelligence (main machine)
+Phase 5 — Sidecar & Multi-machine (main machine)
+Phase 6 — Self-improvement & Production
+
+MODELS
+- Current LLM: phi-3.5-mini-instruct (LM Studio)
+- Embeddings: all-MiniLM-L6-v2 (sentence-transformers)
+- Future LLM: Llama 3.1 8B Q4 (main machine, fully offline)
+- Future vision: LLaVA or moondream (main machine)
+- Future STT: Whisper medium (main machine)

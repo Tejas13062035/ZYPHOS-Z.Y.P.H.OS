@@ -1,6 +1,7 @@
 import sys
 from core.planner import plan
 from core.executor import execute_task
+from memory.store import save, recall
 
 def main():
     if len(sys.argv) < 2:
@@ -17,6 +18,9 @@ def main():
         print(f"  → executing: {task['description']}")
         result = execute_task(task)
         print(f"  ✓ {result['result']}")
+
+    save(goal, tasks)
+    print("MEMORY: saved")
 
 if __name__ == "__main__":
     main()

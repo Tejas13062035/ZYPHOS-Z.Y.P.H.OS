@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2026-04-07T15:41:35.678100",
+    "goal": "screenshot",
+    "tasks": [
+      {
+        "id": "c1faabb9",
+        "description": "screenshot",
+        "status": "done",
+        "result": {
+          "status": "screenshot taken",
+          "has_image": true
+        }
+      }
+    ]
+  }
+]
