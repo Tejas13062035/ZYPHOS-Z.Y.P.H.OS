@@ -51,10 +51,12 @@ def main():
 
     if sys.argv[1] == "--memory":
         query = " ".join(sys.argv[2:])
-        entries = recall(10)
+        entries = recall(query, top_k=5)
         print(f"MEMORY RECALL: {query}")
         for e in entries:
             print(f"  [{e['timestamp']}] {e['goal']}")
+            for t in e.get("tasks", []):
+                print(f"    - {t}")
         return
 
     if sys.argv[1] == "--daemon":
