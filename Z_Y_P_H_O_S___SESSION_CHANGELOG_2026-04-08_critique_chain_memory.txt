@@ -1,0 +1,111 @@
+Z.Y.P.H.O.S — SESSION CHANGELOG
+DATE: 2026-04-08 (Session 6)
+TOPIC: Self-Critique Loop, Goal Chaining, FAISS Smart Memory
+
+================================
+STARTING STATE
+================================
+- Vision via Groq working
+- Web search tool working
+- Smart executor + smart planner working
+- STT, TTS working
+- Memory was simple JSON append + linear recall
+
+================================
+COMPLETED THIS SESSION
+================================
+
+1. SELF-CRITIQUE LOOP (core/critic.py) ✅
+   - New file: core/critic.py
+   - critique(task, result) → {passed, reason}
+   - LLM reviews task + result, returns pass/fail JSON
+   - Brace-depth JSON extractor (same pattern as smart_executor)
+   - smart_execute_with_critique(task, max_retries=2) added to smart_executor.py
+   - Retries up to 2 times on fail, prints [CRITIC] lines
+   - --critique flag added to zyphos.py
+   - Usage: python zyphos.py --smart --critique "goal"
+
+2. ZYPHOS.PY BUGS FIXED ✅
+   - Typo: critiqe= → critique= in run_goal signature
+   - Indentation error on --stop block
+   - Duplicate import of smart_execute removed
+   - Dead unreachable --smart-plan block at bottom of main() removed
+   - --critique flag now properly parsed from sys.argv and passed to run_goal
+   - execute_task() now called for non-smart path (was missing)
+   - last_result tracked across task loop for chaining
+
+3. GOAL CHAINING (core/chainer.py) ✅
+   - New file: core/chainer.py
+   - chain(original_goal, last_result, max_steps=5)
+   - LLM decides after each step: done or next action
+   - Loops until done or max_steps reached
+   - Prints [CHAIN] Step N: ... lines
+   - --chain flag added to zyphos.py
+   - --listen branch auto-enables chain mode
+   - Usage: python zyphos.py --smart --smart-plan --critique --chain "goal"
+
+4. FAISS SMART MEMORY (memory/store.py) ✅
+   - Full replacement of linear JSON recall
+   - Model: sentence-transformers/all-MiniLM-L6-v2 (384-dim embeddings)
+   - Index: faiss.IndexFlatL2
+   - save(goal, tasks) → appends to memory.json + adds vector to FAISS index
+   - recall(query, top_k=5) → semantic search, returns most similar past goals
+   - Legacy int calls (recall(5)) fall back to last N entries
+   - --memory "query" now does semantic search instead of last N
+   - Confirmed working: recall("screenshot") returned correct past goals
+   - numpy longdouble warning is harmless — known WSL/CPU issue
+
+================================
+WARNINGS (HARMLESS)
+================================
+- numpy longdouble signature warning — WSL CPU issue, does not affect results
+- sentence-transformers UNEXPECTED key (embeddings.position_ids) — safe to ignore
+- HF Hub unauthenticated warning — set HF_TOKEN env var to suppress if desired
+
+================================
+DEPENDENCIES ADDED
+================================
+- faiss-cpu (pip, inside venv)
+- sentence-transformers (pip, inside venv)
+
+================================
+GIT COMMITS THIS SESSION
+================================
+- feat: self-critique loop, critic.py, smart_execute_with_critique
+- fix: critique typo, indentation, dead code, --critique flag wired
+- feat: goal chaining, --chain flag, auto continues until done
+- chore: ignore state/memory.json
+- feat: FAISS vector memory, semantic recall replaces linear search
+
+================================
+CURRENT PROJECT STATE
+================================
+
+PHASE 3 — IN PROGRESS
+  ✅ Smart LLM executor (--smart)
+  ✅ Smart planner (--smart-plan)
+  ✅ TTS via sidecar (pyttsx3)
+  ✅ STT via Whisper small + confirmation step
+  ✅ Vision via Groq (llama-4-scout, free tier)
+  ✅ Web search tool (ddgs)
+  ✅ Self-critique loop (--critique, max 2 retries)
+  ✅ Goal chaining (--chain, max 5 steps)
+  ✅ FAISS smart memory (semantic recall)
+  ⬜ Full LLM stack as default (main machine)
+  ⬜ Vision module upgrade (main machine)
+
+FILES ADDED/MODIFIED THIS SESSION
+- core/critic.py            ← new
+- core/chainer.py           ← new
+- core/smart_executor.py    ← smart_execute_with_critique added
+- memory/store.py           ← full rewrite, FAISS + sentence-transformers
+- zyphos.py                 ← --critique, --chain flags, bugs fixed
+- .gitignore                ← state/memory.json added
+
+================================
+NEXT SESSION PRIORITIES
+================================
+1. Task result formatting — tasks dict stored raw, should store clean result string
+2. Self-critique improvement — pass tool name + args to critic for better context
+3. Begin scaffolding for main machine (Llama 3.1 8B Q4, LLaVA vision)
+4. Consider persistent FAISS index file (currently rebuilt from JSON on each start)
