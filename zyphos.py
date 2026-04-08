@@ -85,6 +85,15 @@ def main():
         print(f"SENT: {goal}")
         return
 
+    if sys.argv[1] == "--listen":
+        from tools.stt import listen
+        duration = int(sys.argv[2]) if len(sys.argv) > 2 else 5
+        print(f"STT: listening for {duration}s...")
+        goal = listen(duration)
+        print(f"GOAL: {goal}")
+        run_goal(goal)
+        return
+
     smart = "--smart" in sys.argv
     goals = [g for g in sys.argv[1:] if not g.startswith("--")]
     print(f"QUEUE: {len(goals)} goal(s)")
