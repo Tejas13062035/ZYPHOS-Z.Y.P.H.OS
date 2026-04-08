@@ -1,18 +1,22 @@
 import sys
 import os
+from core.smart_executor import smart_execute
 from core.daemon import start as daemon_start, stop as daemon_stop, is_running, get_pid
 from core.scheduler import schedule_every, schedule_at, launch_background
 from core.planner import plan
 from core.executor import execute_task
 from memory.store import save, recall
 
-def run_goal(goal):
+def run_goal(goal, smart=False):
     print(f"\nGOAL: {goal}")
     tasks = plan(goal)
     print(f"TASKS: {len(tasks)} generated")
     for task in tasks:
         print(f"  → executing: {task['description']}")
-        result = execute_task(task)
+        if smart:
+            result = smart_execute(task)
+        else:
+            result = execute_task(task)
         print(f"  ✓ {result['result']}")
     save(goal, tasks)
     print("MEMORY: saved")
@@ -81,10 +85,11 @@ def main():
         print(f"SENT: {goal}")
         return
 
-    goals = sys.argv[1:]
+    smart = "--smart" in sys.argv
+    goals = [g for g in sys.argv[1:] if not g.startswith("--")]
     print(f"QUEUE: {len(goals)} goal(s)")
     for goal in goals:
-        run_goal(goal)
+        run_goal(goal, smart=smart)
 
 if __name__ == "__main__":
     main()
