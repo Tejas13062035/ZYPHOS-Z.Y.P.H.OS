@@ -29,7 +29,7 @@ def transcribe():
         raise FileNotFoundError(f"No audio file at {AUDIO_PATH}")
     m = load_model()
     print("STT: transcribing...")
-    result = m.transcribe(AUDIO_PATH)
+    result = m.transcribe(AUDIO_PATH, language="en", fp16=False)
     text = result["text"].strip()
     print(f"STT: heard → {text}")
     return text
