@@ -1,5 +1,6 @@
 import sys
 import os
+from core.chainer import chain
 from core.smart_executor import smart_execute, smart_execute_with_critique
 from core.smart_planner import smart_plan
 from core.planner import plan
@@ -10,10 +11,11 @@ from tools.stt import listen
 from memory.store import save, recall
 
 
-def run_goal(goal, smart=False, smart_plan_mode=False, critique=False):
+def run_goal(goal, smart=False, smart_plan_mode=False, critique=False, chain_mode=False):
     print(f"\nGOAL: {goal}")
     tasks = smart_plan(goal) if smart_plan_mode else plan(goal)
     print(f"TASKS: {len(tasks)} generated")
+    last_result = ""
     for task in tasks:
         print(f"  → executing: {task['description']}")
         if smart:
@@ -23,7 +25,11 @@ def run_goal(goal, smart=False, smart_plan_mode=False, critique=False):
                 result = smart_execute(task)
         else:
             result = execute_task(task)
-        print(f"  ✓ {result['result']}")
+        last_result = result.get("result", "")
+        print(f"  ✓ {last_result}")
+    if chain_mode and smart and last_result:
+        print(f"[CHAIN] Starting chain from last result...")
+        chain(goal, last_result)
     save(goal, tasks)
     print("MEMORY: saved")
 
@@ -96,17 +102,18 @@ def main():
         duration = 5
         text = listen(duration, confirm=True)
         if text:
-            run_goal(text, smart=True, smart_plan_mode=True, critique=True)
+            run_goal(text, smart=True, smart_plan_mode=True, critique=True, chain_mode=True)
         return
 
     smart = "--smart" in sys.argv
     smart_plan_mode = "--smart-plan" in sys.argv
     critique = "--critique" in sys.argv
+    chain_mode = "--chain" in sys.argv
     goals = [g for g in sys.argv[1:] if not g.startswith("--")]
 
     print(f"QUEUE: {len(goals)} goal(s)")
     for goal in goals:
-        run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode, critique=critique)
+        run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode, critique=critique, chain_mode=chain_mode)
 
 
 if __name__ == "__main__":
