@@ -12,6 +12,8 @@ Rules:
 - Output raw JSON array only, no markdown, no explanation
 
 Examples:
+goal: "what is on screen" → [{"description": "look what is on screen"}]
+goal: "look at screen and tell me what's open" → [{"description": "look what apps are open"}]
 goal: "take a screenshot" → [{"description": "screenshot"}]
 goal: "type hello world" → [{"description": "type hello world"}]
 goal: "press ctrl c" → [{"description": "hotkey ctrl c"}]

@@ -1,3 +1,4 @@
+from tools.vision import look
 from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
 
 def execute_task(task: dict) -> dict:
@@ -48,6 +49,10 @@ def execute_task(task: dict) -> dict:
         idx = parts.index("hotkey")
         keys = parts[idx + 1:]
         result = hotkey(keys) if keys else {"error": "hotkey requires at least one key"}
+
+    elif "look" in desc:
+        prompt = desc.replace("look", "").strip() or "What do you see on this screen?"
+        result = look(prompt)
 
     else:
         result = {"error": f"unknown task: {desc}"}

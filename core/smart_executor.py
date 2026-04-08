@@ -1,4 +1,5 @@
 import json
+from tools.vision import look
 from core.llm import ask
 from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
 from tools.filesystem import read_file, write_file, list_dir, delete_file
@@ -8,6 +9,7 @@ SYSTEM_PROMPT = """You are a task execution engine. Given a task description, re
 No explanation, no markdown, just raw JSON.
 
 Available tools:
+- look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - screenshot: {} 
 - click: {"x": int, "y": int}
 - type_text: {"text": str}
@@ -23,6 +25,7 @@ Available tools:
 Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 
 TOOL_MAP = {
+    "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "screenshot": lambda args: screenshot(),
     "click": lambda args: click(args["x"], args["y"]),
     "type_text": lambda args: type_text(args["text"]),
