@@ -1,4 +1,5 @@
 import json
+from tools.search import search_summary
 from tools.vision import look
 from core.llm import ask
 from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
@@ -9,6 +10,7 @@ SYSTEM_PROMPT = """You are a task execution engine. Given a task description, re
 No explanation, no markdown, just raw JSON.
 
 Available tools:
+- search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - screenshot: {} 
 - click: {"x": int, "y": int}
@@ -25,6 +27,7 @@ Available tools:
 Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 
 TOOL_MAP = {
+    "search": lambda args: {"status": "ok", "result": search_summary(args.get("query", args[0] if isinstance(args, list) else ""))},
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "screenshot": lambda args: screenshot(),
     "click": lambda args: click(args["x"], args["y"]),

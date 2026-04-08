@@ -54,6 +54,11 @@ def execute_task(task: dict) -> dict:
         prompt = desc.replace("look", "").strip() or "What do you see on this screen?"
         result = look(prompt)
 
+    elif "search" in desc:
+        from tools.search import search_summary
+        query = desc.split("search ", 1)[1] if "search " in desc else desc
+        result = {"status": "ok", "result": search_summary(query)}
+
     else:
         result = {"error": f"unknown task: {desc}"}
 

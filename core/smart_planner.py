@@ -4,6 +4,7 @@ from core.llm import ask
 SYSTEM_PROMPT = """You are a task planner for an automation system. Given a goal, output a JSON array of tasks.
 
 Rules:
+- "search python tutorials"
 - Each task has a "description" field only
 - description must start with the tool name followed by arguments
 - For type: write exactly "type " followed by the actual text. Never write "type TEXT ..."

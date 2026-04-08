@@ -56,6 +56,14 @@ def plan(goal: str) -> list:
                 "status": "pending",
                 "result": None
             })
+        elif word == "search" and i + 1 < len(words):
+            query = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"search {query}",
+                "status": "pending",
+                "result": None
+            })
             break
         else:
             i += 1
