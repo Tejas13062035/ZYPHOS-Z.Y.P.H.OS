@@ -1,5 +1,6 @@
 import sys
 import os
+from core.smart_planner import smart_plan
 from core.smart_executor import smart_execute
 from core.daemon import start as daemon_start, stop as daemon_stop, is_running, get_pid
 from core.scheduler import schedule_every, schedule_at, launch_background
@@ -7,9 +8,9 @@ from core.planner import plan
 from core.executor import execute_task
 from memory.store import save, recall
 
-def run_goal(goal, smart=False):
+def run_goal(goal, smart=False, smart_plan_mode=False):
     print(f"\nGOAL: {goal}")
-    tasks = plan(goal)
+    tasks = smart_plan(goal) if smart_plan_mode else plan(goal)
     print(f"TASKS: {len(tasks)} generated")
     for task in tasks:
         print(f"  → executing: {task['description']}")
@@ -95,10 +96,11 @@ def main():
         return
 
     smart = "--smart" in sys.argv
+    smart_plan_mode = "--smart-plan" in sys.argv
     goals = [g for g in sys.argv[1:] if not g.startswith("--")]
     print(f"QUEUE: {len(goals)} goal(s)")
     for goal in goals:
-        run_goal(goal, smart=smart)
+        run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode)
     
     if "--smart-plan" in sys.argv:
         from core.smart_planner import smart_plan
