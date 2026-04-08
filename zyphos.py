@@ -99,6 +99,21 @@ def main():
     print(f"QUEUE: {len(goals)} goal(s)")
     for goal in goals:
         run_goal(goal, smart=smart)
+    
+    if "--smart-plan" in sys.argv:
+        from core.smart_planner import smart_plan
+        from core.smart_executor import smart_execute
+        goals = [a for a in sys.argv[1:] if not a.startswith("--")]
+        for goal in goals:
+            print(f"\nGOAL: {goal}")
+            tasks = smart_plan(goal)
+            print(f"TASKS: {len(tasks)} generated")
+            for task in tasks:
+                print(f"  → {task['description']}")
+                result = smart_execute(task)
+                print(f"  ✓ {result['result']}")
+            save(goal, tasks)
+        return
 
 if __name__ == "__main__":
     main()

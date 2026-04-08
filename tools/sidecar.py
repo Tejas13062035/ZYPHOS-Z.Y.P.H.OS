@@ -25,3 +25,7 @@ def drag(x1, y1, x2, y2, duration=0.5):
 def hotkey(keys: list):
     r = requests.post(f"{SIDECAR_URL}/hotkey", json={"keys": keys})
     return r.json()
+
+def speak(text: str):
+    r = requests.post(f"{SIDECAR_URL}/speak", json={"text": text})
+    return r.json()
