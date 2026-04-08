@@ -1,4 +1,5 @@
 import json
+from core.critic import critique
 from tools.search import search_summary
 from tools.vision import look
 from core.llm import ask
@@ -77,3 +78,23 @@ def smart_execute(task: dict) -> dict:
         task["result"] = {"error": f"smart_execute failed: {e}", "raw": response}
 
     return task
+
+def smart_execute_with_critique(task: str, max_retries: int = 2) -> str:
+    for attempt in range(max_retries + 1):
+        result = smart_execute(task)
+        verdict = critique(task, result)
+
+        if verdict.get("passed"):
+            if attempt > 0:
+                print(f"[CRITIC] Passed on attempt {attempt+1}.")
+            return result
+
+        reason = verdict.get("reason", "unknown")
+        print(f"[CRITIC] Attempt {attempt+1} failed: {reason}")
+
+        if attempt < max_retries:
+            print(f"[CRITIC] Retrying ({attempt+2}/{max_retries+1})...")
+        else:
+            print(f"[CRITIC] Max retries reached. Returning last result.")
+
+    return result
