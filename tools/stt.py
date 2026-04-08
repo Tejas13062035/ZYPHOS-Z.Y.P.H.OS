@@ -5,7 +5,7 @@ import os
 
 SIDECAR_URL = "http://127.0.0.1:5000"
 AUDIO_PATH = "/mnt/c/zyphos_sidecar/audio.wav"
-MODEL_SIZE = "base"
+MODEL_SIZE = "small"
 
 model = None
 
@@ -34,6 +34,12 @@ def transcribe():
     print(f"STT: heard → {text}")
     return text
 
-def listen(duration=5):
+def listen(duration=5, confirm=True):
     record(duration)
-    return transcribe()
+    text = transcribe()
+    if confirm:
+        answer = input(f"STT heard: '{text}' — execute? [y/n]: ").strip().lower()
+        if answer != "y":
+            print("STT: cancelled")
+            return None
+    return text

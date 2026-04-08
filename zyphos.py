@@ -1,5 +1,6 @@
 import sys
 import os
+from tools.stt import listen
 from core.smart_planner import smart_plan
 from core.smart_executor import smart_execute
 from core.daemon import start as daemon_start, stop as daemon_stop, is_running, get_pid
@@ -87,12 +88,10 @@ def main():
         return
 
     if sys.argv[1] == "--listen":
-        from tools.stt import listen
-        duration = int(sys.argv[2]) if len(sys.argv) > 2 else 5
-        print(f"STT: listening for {duration}s...")
-        goal = listen(duration)
-        print(f"GOAL: {goal}")
-        run_goal(goal)
+        duration = 5
+        text = listen(duration, confirm=True)
+        if text:
+            run_goal(text, smart=True, smart_plan_mode=True)
         return
 
     smart = "--smart" in sys.argv
