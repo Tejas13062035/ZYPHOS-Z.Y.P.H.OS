@@ -5,8 +5,11 @@ import signal
 from datetime import datetime
 from core.planner import plan
 from core.executor import execute_task
+from core.smart_planner import smart_plan
+from core.smart_executor import smart_execute_with_critique
 from memory.store import save
 
+BACKEND = os.environ.get("ZYPHOS_BACKEND", "phi").lower()
 GOAL_FILE = os.path.expanduser("~/zyp/state/pending_goals.txt")
 LOG_FILE = os.path.expanduser("~/zyp/logs/daemon.log")
 PID_FILE = os.path.expanduser("~/zyp/state/zyphos.pid")
@@ -60,12 +63,29 @@ def stop():
 
 def run_goal(goal):
     log(f"GOAL: {goal}")
-    tasks = plan(goal)
+    use_smart = BACKEND == "llama" or os.path.exists(
+        os.path.expanduser("~/zyp/state/smart_mode")
+    )
+
+    if use_smart:
+        log("MODE: smart")
+        tasks = smart_plan(goal)
+    else:
+        log("MODE: keyword")
+        tasks = plan(goal)
+
     log(f"TASKS: {len(tasks)} generated")
     for task in tasks:
         log(f"  → {task['description']}")
-        result = execute_task(task)
-        log(f"  ✓ {result['result']}")
+        if use_smart:
+            result = smart_execute_with_critique(task)
+            result_str = result.get("result", {})
+            if isinstance(result_str, dict):
+                result_str = result_str.get("result", str(result_str))
+        else:
+            result = execute_task(task)
+            result_str = result.get("result", "")
+        log(f"  ✓ {result_str}")
     save(goal, tasks)
 
 def start():

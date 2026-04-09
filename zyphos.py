@@ -93,6 +93,17 @@ def main():
             print("ERROR: --schedule needs --every SECONDS or --at HH:MM")
         return
 
+    if sys.argv[1] == "--smart-daemon":
+        flag_file = os.path.expanduser("~/zyp/state/smart_mode")
+        if "--off" in sys.argv:
+            if os.path.exists(flag_file):
+                os.remove(flag_file)
+            print("DAEMON: smart mode disabled")
+        else:
+            open(flag_file, "w").close()
+            print("DAEMON: smart mode enabled")
+        return
+
     if sys.argv[1] == "--send":
         goal = " ".join(sys.argv[2:])
         with open(os.path.expanduser("~/zyp/state/pending_goals.txt"), "a") as f:
