@@ -1,5 +1,6 @@
 import sys
 import os
+from core.explainer import explain
 from core.chainer import chain
 from core.smart_executor import smart_execute, smart_execute_with_critique
 from core.smart_planner import smart_plan
@@ -129,6 +130,10 @@ def main():
         text = listen(duration, confirm=True)
         if text:
             run_goal(text, smart=True, smart_plan_mode=True, critique=True, chain_mode=True)
+        return
+
+    if sys.argv[1] == "--explain":
+        explain()
         return
 
     smart = "--smart" in sys.argv or os.environ.get("ZYPHOS_BACKEND", "phi") == "llama"
