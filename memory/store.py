@@ -51,9 +51,30 @@ def save(goal: str, tasks: list):
     global _index, _entries
     import faiss
 
+    clean_tasks = []
+    for t in tasks:
+        if isinstance(t, dict):
+            desc = t.get("description", "")
+            result = t.get("result", {})
+            if isinstance(result, dict):
+                # pull the most meaningful string out of result dict
+                result_str = (
+                    result.get("result") or
+                    result.get("status") or
+                    result.get("content") or
+                    result.get("output") or
+                    str(result)
+                )
+            else:
+                result_str = str(result) if result else ""
+        else:
+            desc = str(t)
+            result_str = ""
+        clean_tasks.append({"description": desc, "result": result_str})
+
     entry = {
         "goal": goal,
-        "tasks": [t.get("description", "") for t in tasks],
+        "tasks": clean_tasks,
         "timestamp": datetime.now().isoformat()
     }
 
@@ -61,7 +82,6 @@ def save(goal: str, tasks: list):
     _entries.append(entry)
     _save_entries(_entries)
 
-    # add to index
     model = _get_model()
     vector = model.encode([goal]).astype("float32")
     index = _get_index()

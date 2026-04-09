@@ -2,7 +2,7 @@ import json
 from core.llm import ask
 
 CRITIC_PROMPT = """You are a task critic for an AI agent called Zyphos.
-You are given a task description and the result it produced.
+You are given a task description, the tool that was called, the args passed to it, and the result.
 Decide if the task succeeded or failed.
 
 Respond ONLY with a JSON object in this format:
@@ -11,6 +11,7 @@ or
 {"passed": false, "reason": "short reason"}
 
 No explanation outside the JSON."""
+
 
 def _extract_json(text: str) -> dict:
     start = text.find("{")
@@ -29,7 +30,14 @@ def _extract_json(text: str) -> dict:
                 return {"passed": True, "reason": "json parse failed"}
     return {"passed": True, "reason": "incomplete json"}
 
-def critique(task: str, result: str) -> dict:
-    prompt = f"Task: {task}\nResult: {result}"
+
+def critique(task: str, result: str, tool: str = "", args: dict = None) -> dict:
+    args_str = json.dumps(args) if args else "none"
+    prompt = (
+        f"Task: {task}\n"
+        f"Tool called: {tool if tool else 'unknown'}\n"
+        f"Args: {args_str}\n"
+        f"Result: {result}"
+    )
     response = ask(prompt, system=CRITIC_PROMPT, max_tokens=200)
     return _extract_json(response)
