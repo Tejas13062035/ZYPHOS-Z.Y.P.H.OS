@@ -1,0 +1,85 @@
+Z.Y.P.H.O.S — SESSION CHANGELOG
+DATE: 2026-04-09 (Session 8)
+TOPIC: Main Machine Scaffold — Backend Switches for LLM and Vision
+
+================================
+STARTING STATE
+================================
+- All Phase 3 features working on current machine
+- LLM hardcoded to Phi-3.5 via LM Studio
+- Vision hardcoded to Groq API
+- No way to switch backends without editing code
+
+================================
+COMPLETED THIS SESSION
+================================
+
+1. LLM BACKEND SWITCH (core/llm.py) ✅
+   - ZYPHOS_BACKEND env var controls which LLM is used
+   - "phi" (default) → Phi-3.5-mini-instruct via LM Studio localhost:1234
+   - "llama" → Llama 3.1 8B Instruct GGUF via LM Studio localhost:1234
+   - No code changes needed on main machine — just set env var
+   - Usage: export ZYPHOS_BACKEND=llama
+
+2. VISION BACKEND SWITCH (tools/vision.py) ✅
+   - ZYPHOS_VISION_BACKEND env var controls which vision model is used
+   - "groq" (default) → llama-4-scout-17b via Groq API (free tier)
+   - "llava" → LLaVA v1.5 7B via LM Studio localhost:1234 (main machine)
+   - Both use same image_url format — clean swap
+   - Usage: export ZYPHOS_VISION_BACKEND=llava
+
+3. SMART MODE AUTO-DEFAULT (zyphos.py) ✅
+   - When ZYPHOS_BACKEND=llama, --smart is automatically enabled
+   - No need to pass --smart flag on main machine
+   - Current machine behaviour unchanged
+
+================================
+MAIN MACHINE ACTIVATION
+================================
+When Ryzen 9 9955HX + RTX 5050 arrives (~2 months):
+
+  export ZYPHOS_BACKEND=llama
+  export ZYPHOS_VISION_BACKEND=llava
+
+That's it. Full LLM stack switches over automatically.
+
+Models to load in LM Studio:
+  LLM:    lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF (Q4)
+  Vision: llava-v1.5-7b
+
+================================
+GIT COMMITS THIS SESSION
+================================
+- feat: BACKEND env switch, phi vs llama in core/llm.py
+- feat: vision backend switch groq vs llava, --smart default on llama backend
+
+================================
+CURRENT PROJECT STATE
+================================
+
+PHASE 3 — IN PROGRESS
+  ✅ Smart LLM executor (--smart)
+  ✅ Smart planner (--smart-plan)
+  ✅ TTS via sidecar (pyttsx3)
+  ✅ STT via Whisper small + confirmation step
+  ✅ Vision via Groq (llama-4-scout, free tier)
+  ✅ Web search tool (ddgs)
+  ✅ Self-critique loop (--critique, max 2 retries)
+  ✅ Goal chaining (--chain, max 5 steps)
+  ✅ FAISS smart memory (semantic recall, persistent index)
+  ✅ Main machine scaffold (env var backend switches)
+  ⬜ LLaVA local vision (main machine)
+  ⬜ Llama 3.1 8B as default LLM (main machine)
+
+FILES MODIFIED THIS SESSION
+- core/llm.py       ← BACKEND env switch, phi vs llama
+- tools/vision.py   ← VISION_BACKEND env switch, groq vs llava
+- zyphos.py         ← --smart auto-enabled on llama backend
+
+================================
+NEXT SESSION PRIORITIES
+================================
+1. Plugin system — drop-in tools without editing core files
+2. Zyphos self-awareness — can read its own source, explain itself
+3. Watchdog — auto-restart daemon if it crashes
+4. Begin testing full pipeline end to end
