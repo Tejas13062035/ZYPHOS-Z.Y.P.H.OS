@@ -61,13 +61,15 @@ def save(goal: str, tasks: list):
             desc = t.get("description", "")
             result = t.get("result", {})
             if isinstance(result, dict):
-                # pull the most meaningful string out of result dict
+                # strip base64 image blobs before storing
+                cleaned = {k: v for k, v in result.items() if k != "image"}
                 result_str = (
-                    result.get("result") or
-                    result.get("status") or
-                    result.get("content") or
-                    result.get("output") or
-                    str(result)
+                    cleaned.get("result") or
+                    cleaned.get("status") or
+                    cleaned.get("saved") or
+                    cleaned.get("content") or
+                    cleaned.get("output") or
+                    str(cleaned)
                 )
             else:
                 result_str = str(result) if result else ""
