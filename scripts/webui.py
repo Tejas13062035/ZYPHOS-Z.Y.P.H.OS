@@ -8,6 +8,8 @@ app = Flask(__name__)
 
 GOAL_FILE = os.path.expanduser("~/zyp/state/pending_goals.txt")
 LOG_FILE = os.path.expanduser("~/zyp/logs/daemon.log")
+SMART_MODE_FILE = os.path.expanduser("~/zyp/state/smart_mode")
+
 
 def get_pending():
     if not os.path.exists(GOAL_FILE):
@@ -15,12 +17,21 @@ def get_pending():
     with open(GOAL_FILE, "r") as f:
         return [g.strip() for g in f.readlines() if g.strip()]
 
+
 def get_last_logs(n=20):
     if not os.path.exists(LOG_FILE):
         return []
     with open(LOG_FILE, "r") as f:
         lines = f.readlines()
     return [l.strip() for l in lines[-n:]]
+
+
+def get_backend_info():
+    llm = os.environ.get("ZYPHOS_BACKEND", "phi").upper()
+    vision = os.environ.get("ZYPHOS_VISION_BACKEND", "groq").upper()
+    smart = os.path.exists(SMART_MODE_FILE)
+    return llm, vision, smart
+
 
 HTML = """
 <!DOCTYPE html>
@@ -32,6 +43,7 @@ HTML = """
         body { background: #0a0a0a; color: #e0e0e0; font-family: monospace; padding: 20px; }
         h1 { color: #00ffcc; letter-spacing: 4px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .panel { background: #111; border: 1px solid #333; border-radius: 6px; padding: 16px; }
         .panel h3 { margin: 0 0 10px 0; font-size: 12px; letter-spacing: 2px; color: #888; }
         .running { color: #00ff88; }
@@ -39,13 +51,20 @@ HTML = """
         .log-line { font-size: 12px; color: #aaa; margin: 2px 0; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { text-align: left; color: #888; border-bottom: 1px solid #333; padding: 6px; }
-        td { padding: 6px; border-bottom: 1px solid #1a1a1a; }
-        td:first-child { color: #555; }
+        td { padding: 6px; border-bottom: 1px solid #1a1a1a; vertical-align: top; }
+        td:first-child { color: #555; white-space: nowrap; }
         td:nth-child(2) { color: #00ccff; }
+        .task-list { margin: 4px 0 0 0; padding: 0; list-style: none; }
+        .task-list li { font-size: 11px; color: #666; margin: 2px 0; }
+        .task-list li span { color: #444; }
         input { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px 12px; font-family: monospace; width: 70%; border-radius: 4px; }
         button { background: #00ffcc; color: #000; border: none; padding: 8px 16px; font-family: monospace; font-weight: bold; border-radius: 4px; cursor: pointer; margin-left: 8px; }
         .pid { color: #888; font-size: 13px; }
         .pending-item { color: #ffcc00; font-size: 13px; margin: 2px 0; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-top: 4px; }
+        .badge-blue { background: #003366; color: #00ccff; }
+        .badge-green { background: #003322; color: #00ff88; }
+        .badge-yellow { background: #332200; color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -54,13 +73,21 @@ HTML = """
         <input type="text" id="goalInput" placeholder="enter goal..." onkeydown="if(event.key==='Enter') sendGoal()">
         <button onclick="sendGoal()">SEND</button>
     </div>
-    <div class="grid">
+    <div class="grid3">
         <div class="panel">
             <h3>DAEMON</h3>
             <span class="{{ 'running' if running else 'stopped' }}">
                 {{ 'RUNNING' if running else 'STOPPED' }}
             </span>
             <span class="pid"> — PID {{ pid if running else 'none' }}</span>
+        </div>
+        <div class="panel">
+            <h3>BACKENDS</h3>
+            <span class="badge badge-blue">LLM: {{ llm_backend }}</span>
+            <span class="badge badge-green">VISION: {{ vision_backend }}</span>
+            <span class="badge {{ 'badge-green' if smart_mode else 'badge-yellow' }}">
+                SMART: {{ 'ON' if smart_mode else 'OFF' }}
+            </span>
         </div>
         <div class="panel">
             <h3>PENDING QUEUE</h3>
@@ -86,8 +113,22 @@ HTML = """
             {% for e in memory %}
             <tr>
                 <td>{{ e.timestamp[:19] }}</td>
-                <td>{{ e.goal }}</td>
-                <td>{{ e.tasks|length }}</td>
+                <td>
+                    {{ e.goal }}
+                    {% if e.tasks %}
+                    <ul class="task-list">
+                        {% for t in e.tasks %}
+                        <li>
+                            → {{ t.description if t.description is defined else t }}
+                            {% if t.result is defined and t.result %}
+                            <span>— {{ t.result[:80] }}{% if t.result|length > 80 %}...{% endif %}</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </td>
+                <td style="color:#555">{{ e.tasks|length }}</td>
             </tr>
             {% endfor %}
         </table>
@@ -106,12 +147,16 @@ HTML = """
 
 @app.route("/")
 def index():
+    llm_backend, vision_backend, smart_mode = get_backend_info()
     return render_template_string(HTML,
         running=is_running(),
         pid=get_pid(),
         pending=get_pending(),
         logs=get_last_logs(),
-        memory=list(reversed(recall(10)))
+        memory=list(reversed(recall(10))),
+        llm_backend=llm_backend,
+        vision_backend=vision_backend,
+        smart_mode=smart_mode
     )
 
 @app.route("/send", methods=["POST"])
