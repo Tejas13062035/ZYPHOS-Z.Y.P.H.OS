@@ -24,11 +24,15 @@ def _get_index():
     import faiss
     if _index is None:
         _entries = _load_entries()
-        _index = faiss.IndexFlatL2(384)
-        if _entries:
-            model = _get_model()
-            vectors = model.encode([e["goal"] for e in _entries]).astype("float32")
-            _index.add(vectors)
+        if os.path.exists(INDEX_FILE) and _entries:
+            _index = faiss.read_index(INDEX_FILE)
+        else:
+            _index = faiss.IndexFlatL2(384)
+            if _entries:
+                model = _get_model()
+                vectors = model.encode([e["goal"] for e in _entries]).astype("float32")
+                _index.add(vectors)
+                faiss.write_index(_index, INDEX_FILE)
     return _index
 
 
@@ -86,6 +90,10 @@ def save(goal: str, tasks: list):
     vector = model.encode([goal]).astype("float32")
     index = _get_index()
     index.add(vector)
+    index = _get_index()
+    index.add(vector)
+    import faiss
+    faiss.write_index(index, INDEX_FILE)
     print(f"MEMORY: saved + indexed ({len(_entries)} total)")
 
 
