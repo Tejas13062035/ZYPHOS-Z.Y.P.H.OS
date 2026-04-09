@@ -104,6 +104,19 @@ def main():
             print("DAEMON: smart mode enabled")
         return
 
+    if sys.argv[1] == "--watchdog":
+        import subprocess
+        venv_python = os.path.expanduser("~/zyp/venv/bin/python")
+        log_file = open(os.path.expanduser("~/zyp/logs/watchdog.log"), "a")
+        subprocess.Popen(
+            [venv_python, "scripts/watchdog.py"],
+            cwd=os.path.expanduser("~/zyp"),
+            stdout=log_file,
+            stderr=subprocess.STDOUT
+        )
+        print("WATCHDOG: started in background")
+        return
+
     if sys.argv[1] == "--send":
         goal = " ".join(sys.argv[2:])
         with open(os.path.expanduser("~/zyp/state/pending_goals.txt"), "a") as f:
