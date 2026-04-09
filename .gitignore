@@ -4,3 +4,8 @@ __pycache__/
 .env
 state/memory.json
 state/memory.index
+logs/
+state/
+core/*.swp
+*.swpo
+
