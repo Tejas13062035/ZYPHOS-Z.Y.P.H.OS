@@ -107,7 +107,7 @@ def main():
             run_goal(text, smart=True, smart_plan_mode=True, critique=True, chain_mode=True)
         return
 
-    smart = "--smart" in sys.argv
+    smart = "--smart" in sys.argv or os.environ.get("ZYPHOS_BACKEND", "phi") == "llama"
     smart_plan_mode = "--smart-plan" in sys.argv
     critique = "--critique" in sys.argv
     chain_mode = "--chain" in sys.argv
