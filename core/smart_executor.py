@@ -1,4 +1,5 @@
 import json
+from core.plugin_loader import load_plugins
 from core.critic import critique
 from tools.search import search_summary
 from tools.vision import look
@@ -7,13 +8,22 @@ from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
 from tools.filesystem import read_file, write_file, list_dir, delete_file
 from tools.shell import run_shell
 
-SYSTEM_PROMPT = """You are a task execution engine. Given a task description, respond with a JSON object only.
+def _build_system_prompt() -> str:
+    plugin_lines = ""
+    for name, plugin in load_plugins().items():
+        args_str = ", ".join(f"{k}: {v}" for k, v in plugin["args"].items())
+        plugin_lines += f"\n- {name}: {{{args_str}}}  — {plugin['description']}"
+
+    return SYSTEM_PROMPT_BASE + plugin_lines
+
+
+SYSTEM_PROMPT_BASE = """You are a task execution engine. Given a task description, respond with a JSON object only.
 No explanation, no markdown, just raw JSON.
 
 Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
-- screenshot: {} 
+- screenshot: {}
 - click: {"x": int, "y": int}
 - type_text: {"text": str}
 - scroll: {"x": int, "y": int, "amount": int}
@@ -43,9 +53,14 @@ TOOL_MAP = {
     "run_shell": lambda args: run_shell(args["command"]),
 }
 
+# load plugins and merge into TOOL_MAP
+_plugins = load_plugins()
+for _name, _plugin in _plugins.items():
+    TOOL_MAP[_name] = _plugin["run"]
+
 def smart_execute(task: dict) -> dict:
     desc = task.get("description", "")
-    response = ask(desc, system=SYSTEM_PROMPT, max_tokens=100)
+    response = ask(desc, system=_build_system_prompt(), max_tokens=100)
 
     try:
         # extract first complete JSON object
