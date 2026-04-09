@@ -6,7 +6,7 @@ import os
 SIDECAR_URL = "http://127.0.0.1:5000"
 AUDIO_PATH = "/mnt/c/zyphos_sidecar/audio.wav"
 MODEL_SIZE = "small"
-CONFIDENCE_THRESHOLD = 0.6  # reject transcription below this avg log prob
+CONFIDENCE_THRESHOLD = 0.4  # reject transcription below this avg log prob
 MAX_RECORD_ATTEMPTS = 3
 
 model = None
@@ -62,7 +62,9 @@ def listen(duration=5, confirm=True):
             if attempt < MAX_RECORD_ATTEMPTS - 1:
                 continue
             else:
-                print("STT: max attempts reached, aborting")
+                answer = input(f"STT: max attempts reached. Accept '{text}' anyway? [y/n]: ").strip().lower()
+                if answer == "y":
+                    return text
                 return None
 
         if confirm:
