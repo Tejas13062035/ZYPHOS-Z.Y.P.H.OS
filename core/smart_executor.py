@@ -1,3 +1,4 @@
+import os
 import json
 from core.plugin_loader import load_plugins
 from core.critic import critique
@@ -46,7 +47,7 @@ TOOL_MAP = {
     "scroll": lambda args: scroll(args["x"], args["y"], args.get("amount", 3)),
     "drag": lambda args: drag(args["x1"], args["y1"], args["x2"], args["y2"]),
     "hotkey": lambda args: hotkey(args["keys"]),
-    "read_file": lambda args: read_file(args["path"]),
+    "read_file": lambda args: read_file(args["path"]) if os.path.exists(os.path.expanduser(args["path"])) else {"error": f"skipped: path does not exist: {args['path']}"},
     "write_file": lambda args: write_file(args["path"], args["content"]),
     "list_dir": lambda args: list_dir(args["path"]),
     "delete_file": lambda args: delete_file(args["path"]),
