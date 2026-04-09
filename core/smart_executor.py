@@ -72,7 +72,11 @@ def smart_execute(task: dict) -> dict:
 
         result = TOOL_MAP[tool](args)
         task["status"] = "done"
-        task["result"] = result
+        task["result"] = {
+            "result": str(result),
+            "tool": tool,
+            "args": args
+        }
     except Exception as e:
         task["status"] = "done"
         task["result"] = {"error": f"smart_execute failed: {e}", "raw": response}
@@ -82,7 +86,13 @@ def smart_execute(task: dict) -> dict:
 def smart_execute_with_critique(task: str, max_retries: int = 2) -> str:
     for attempt in range(max_retries + 1):
         result = smart_execute(task)
-        verdict = critique(task, result)
+        inner = result.get("result", {})
+        verdict = critique(
+            task=task if isinstance(task, str) else task.get("description", ""),
+            result=inner.get("result", str(inner)) if isinstance(inner, dict) else str(inner),
+            tool=inner.get("tool", "") if isinstance(inner, dict) else "",
+            args=inner.get("args", {}) if isinstance(inner, dict) else {}
+        )
 
         if verdict.get("passed"):
             if attempt > 0:
