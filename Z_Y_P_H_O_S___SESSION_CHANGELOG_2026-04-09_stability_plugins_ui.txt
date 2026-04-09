@@ -1,0 +1,118 @@
+0~Z.Y.P.H.O.S — SESSION CHANGELOG
+DATE: 2026-04-09 (Session 9)
+TOPIC: Daemon Smart Mode, Watchdog, Plugin System, STT Confidence, Web UI
+
+================================
+STARTING STATE
+================================
+- All Phase 3 features working
+- Daemon using keyword executor only
+- No auto-restart if daemon crashes
+- No plugin system
+- STT accepting any transcription regardless of confidence
+- Web UI showing raw task dicts, no backend info
+
+================================
+COMPLETED THIS SESSION
+================================
+
+1. DAEMON SMART MODE (core/daemon.py) ✅
+   - Daemon now uses smart_plan + smart_execute_with_critique when enabled
+   - Enabled via ZYPHOS_BACKEND=llama env var OR touch ~/zyp/state/smart_mode
+   - --smart-daemon flag in zyphos.py toggles smart_mode file
+   - --smart-daemon --off disables it
+   - Logs MODE: smart or MODE: keyword on each goal
+   - Confirmed working — daemon executed screenshot goal in smart mode
+
+2. WATCHDOG (scripts/watchdog.py) ✅
+   - Checks daemon every 30 seconds
+   - Auto-restarts via subprocess.Popen if daemon is down
+   - Logs to ~/zyp/logs/watchdog.log
+   - --watchdog flag in zyphos.py starts it in background
+   - Usage: python zyphos.py --watchdog
+
+3. PLUGIN SYSTEM (core/plugin_loader.py + plugins/) ✅
+   - New folder: plugins/
+   - Drop any .py file with TOOL_NAME, TOOL_DESCRIPTION, TOOL_ARGS, run()
+   - load_plugins() scans and imports all valid plugins at startup
+   - Plugins merged into TOOL_MAP in smart_executor.py
+   - Plugin descriptions injected into SYSTEM_PROMPT dynamically
+   - Example plugin: plugins/hello.py
+   - NOTE: Phi-3.5 too weak to reliably use custom plugins
+     — will work properly on main machine with Llama 3.1 8B
+
+4. STT CONFIDENCE THRESHOLD (tools/stt.py) ✅
+   - Whisper returns per-segment avg_logprob
+   - Converted to 0-1 confidence via math.exp(avg_logprob)
+   - Threshold: 0.4 (tuned to current mic/hardware)
+   - Rejects and re-records up to 3 attempts if below threshold
+   - Force-accept prompt at max attempts instead of hard abort
+   - Confirmed working — low confidence triggers retry loop
+
+5. WEB UI IMPROVEMENTS (scripts/webui.py) ✅
+   - New BACKENDS panel: LLM / VISION / SMART MODE badges
+   - Goal history now shows task breakdown with description + result
+   - Results truncated to 80 chars to avoid overflow
+   - Grid changed from 2-col to 3-col for new panel
+   - Backend info read from env vars + smart_mode file
+
+================================
+BUGS FIXED
+================================
+- Unterminated SYSTEM_PROMPT_BASE string in smart_executor.py
+- plugins/hello.py not saved after crash — recreated
+- logs/ and state/ files untracked from git (were causing dirty status)
+- swap files added to gitignore
+
+================================
+GIT COMMITS THIS SESSION
+================================
+- feat: daemon smart mode, --smart-daemon flag, smart_mode toggle file
+- feat: watchdog script, auto-restarts daemon if down, --watchdog flag
+- feat: plugin system, drop .py into plugins/ to add tools automatically
+- fix: unterminated SYSTEM_PROMPT_BASE string in smart_executor
+- fix: lower STT threshold to 0.4, add force-accept at max attempts
+- feat: web UI shows backend info, task breakdown in goal history
+- chore: untrack runtime files, gitignore logs and state
+
+================================
+CURRENT PROJECT STATE
+================================
+
+PHASE 3 — IN PROGRESS
+  ✅ Smart LLM executor (--smart)
+  ✅ Smart planner (--smart-plan)
+  ✅ TTS via sidecar (pyttsx3)
+  ✅ STT via Whisper small + confidence threshold
+  ✅ Vision via Groq (llama-4-scout, free tier)
+  ✅ Web search tool (ddgs)
+  ✅ Self-critique loop (--critique, max 2 retries)
+  ✅ Goal chaining (--chain, max 5 steps)
+  ✅ FAISS smart memory (semantic recall, persistent index)
+  ✅ Main machine scaffold (env var backend switches)
+  ✅ Daemon smart mode (smart_mode toggle file)
+  ✅ Watchdog (auto-restart daemon)
+  ✅ Plugin system (drop .py into plugins/)
+  ✅ Web UI backend info + task breakdown
+  ⬜ Zyphos self-awareness (--explain flag)
+  ⬜ LLaVA local vision (main machine)
+  ⬜ Llama 3.1 8B as default LLM (main machine)
+
+FILES ADDED/MODIFIED THIS SESSION
+- core/daemon.py         ← smart mode, smart_mode file check
+- core/plugin_loader.py ← new, scans plugins/ directory
+- core/smart_executor.py ← plugin merge, dynamic system prompt
+- scripts/watchdog.py   ← new
+- scripts/webui.py      ← backend panel, task breakdown
+- tools/stt.py          ← confidence threshold, force-accept
+- zyphos.py             ← --smart-daemon, --watchdog flags
+- plugins/hello.py      ← example plugin
+- plugins/README.md     ← plugin authoring guide
+- .gitignore            ← logs/, state/, *.swp
+
+================================
+NEXT SESSION PRIORITIES
+================================
+1. Zyphos self-awareness — --explain flag, reads own source
+2. End to end pipeline test — voice in, smart plan, execute, critique, chain, memory
+3. Begin prep for main machine arrival
