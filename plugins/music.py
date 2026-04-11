@@ -15,24 +15,26 @@ def run(args: dict) -> dict:
         if not query:
             return {"error": "query required for play"}
         try:
-            # stop any existing playback
             stop_music()
-            # get audio URL via yt-dlp
+            # download audio to shared path
+            out_path = "/mnt/c/zyphos_sidecar/music.mp3"
+            win_path = r"C:\zyphos_sidecar\music.mp3"
             result = subprocess.run(
-                ["yt-dlp", "-f", "bestaudio", "--get-url", f"ytsearch1:{query}"],
-                capture_output=True, text=True, timeout=30
+                ["yt-dlp", "-f", "bestaudio/best", 
+                 "-o", "/mnt/c/zyphos_sidecar/music.%(ext)s",
+                 "--no-playlist",
+                 f"ytsearch1:{query}"],
+                capture_output=True, text=True, timeout=120
             )
-            url = result.stdout.strip()
-            if not url:
-                return {"error": "no audio found"}
-            # play with mpv in background
-            proc = subprocess.Popen(
-                ["mpv", "--no-video", "--really-quiet", url],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            with open(PLAYER_PID_FILE, "w") as f:
-                f.write(str(proc.pid))
+            # find the downloaded file
+            import glob
+            files = glob.glob("/mnt/c/zyphos_sidecar/music.*")
+            if not files:
+                return {"error": "download failed"}
+            out_path = files[0]
+            win_path = r"C:\zyphos_sidecar\\" + os.path.basename(out_path)
+            import requests as req
+            r = req.post("http://127.0.0.1:5000/play_audio", json={"path": win_path})
             return {"status": "playing", "query": query}
         except Exception as e:
             return {"error": str(e)}
@@ -47,13 +49,9 @@ def run(args: dict) -> dict:
         return {"error": f"unknown action: {action}"}
 
 def stop_music() -> dict:
-    if not os.path.exists(PLAYER_PID_FILE):
-        return {"status": "nothing playing"}
     try:
-        with open(PLAYER_PID_FILE) as f:
-            pid = int(f.read().strip())
-        subprocess.run(["kill", str(pid)])
-        os.remove(PLAYER_PID_FILE)
-        return {"status": "stopped"}
-    except Exception as e:
-        return {"error": str(e)}
+        import requests as req
+        req.post("http://127.0.0.1:5000/stop_audio")
+    except:
+        pass
+    return {"status": "stopped"}
