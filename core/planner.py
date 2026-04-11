@@ -75,6 +75,15 @@ def plan(goal: str) -> list:
                 "result": None
             })
             break
+
+        elif word == "stop":
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": "stop music",
+                "status": "pending",
+                "result": None
+            })
+            i += 1
         else:
             i += 1
     return tasks

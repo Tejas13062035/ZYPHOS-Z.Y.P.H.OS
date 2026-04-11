@@ -64,6 +64,10 @@ def execute_task(task: dict) -> dict:
         query = desc[5:].strip()
         result = music_run({"action": "play", "query": query})
 
+    elif "stop music" in desc or desc == "stop":
+        from plugins.music import stop_music
+        result = stop_music()
+
     else:
         result = {"error": f"unknown task: {desc}"}
 
