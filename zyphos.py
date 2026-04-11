@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from core.explainer import explain
 from core.chainer import chain
 from core.smart_executor import smart_execute, smart_execute_with_critique
@@ -132,6 +133,31 @@ def main():
             run_goal(text, smart=True, smart_plan_mode=True, critique=True, chain_mode=True)
         return
 
+    if sys.argv[1] == "--wakeword":
+        from tools.wakeword import start as wakeword_start
+        from tools.stt import listen
+
+        def on_wake():
+            from tools.sidecar import speak
+            speak("Yes?")
+            print("WAKEWORD: listening for command...")
+            try:
+                goal = listen(5)
+                print(f"GOAL: {goal}")
+                run_goal(goal, smart=True)
+            except Exception as e:
+                print(f"WAKEWORD: error — {e}")
+
+        print("WAKEWORD: starting — say 'Zyphos' or 'Arise' to activate")
+        t = wakeword_start(on_wake)
+        try:
+            while True:
+                import time as _time
+                _time.sleep(1)
+        except KeyboardInterrupt:
+            print("WAKEWORD: stopped")
+        return
+
     if sys.argv[1] == "--explain":
         explain()
         return
@@ -146,6 +172,35 @@ def main():
     for goal in goals:
         run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode, critique=critique, chain_mode=chain_mode)
 
+    if sys.argv[1] == "--wake":
+        from tools.wakeword import listen_for_wake_word
+        def on_wake(transcript):
+            logger.info("Wake word triggered — listening for goal...")
+            from tools.stt import transcribe
+            goal = transcribe()
+            if goal:
+                run(goal)
+        listen_for_wake_word(on_wake)
+        sys.exit(0)
+
+    if sys.argv[1] == "--status":
+        state = ZypState.load()
+        print(f"\nGoal: {state.goal}")
+        print(f"Current step: {state.current_step}")
+        print(f"Completed: {len(state.completed_steps)} steps")
+        sys.exit(0)
+
+    if sys.argv[1] == "--memory":
+        query = " ".join(sys.argv[2:])
+        memory = Memory()
+        results = memory.search(query)
+        print("\nZ.Y.P.H.O.S MEMORY RECALL:")
+        for i, r in enumerate(results, 1):
+            print(f"{i}. {r}")
+        sys.exit(0)
+
+    goal = " ".join(sys.argv[1:])
+    run(goal)
 
 if __name__ == "__main__":
     main()
