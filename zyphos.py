@@ -198,8 +198,11 @@ def main():
             print(f"{i}. {r}")
         sys.exit(0)
 
-    goal = " ".join(sys.argv[1:])
-    run(goal)
+    goals = [g for g in sys.argv[1:] if not g.startswith("--")]
+    smart = "--smart" in sys.argv
+    smart_plan_mode = "--smart-plan" in sys.argv
+    for goal in goals:
+        run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode)
 
 if __name__ == "__main__":
     main()

@@ -59,6 +59,11 @@ def execute_task(task: dict) -> dict:
         query = desc.split("search ", 1)[1] if "search " in desc else desc
         result = {"status": "ok", "result": search_summary(query)}
 
+    elif desc.startswith("play "):
+        from plugins.music import run as music_run
+        query = desc[5:].strip()
+        result = music_run({"action": "play", "query": query})
+
     else:
         result = {"error": f"unknown task: {desc}"}
 

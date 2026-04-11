@@ -65,6 +65,16 @@ def plan(goal: str) -> list:
                 "result": None
             })
             break
+
+        elif word == "play" and i + 1 < len(words):
+            query = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"play {query}",
+                "status": "pending",
+                "result": None
+            })
+            break
         else:
             i += 1
     return tasks
