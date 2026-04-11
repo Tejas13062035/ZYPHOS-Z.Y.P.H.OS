@@ -11,7 +11,7 @@ def run(args: dict) -> dict:
     action = args.get("action", "").lower()
     query = args.get("query", "")
 
-    if action == "play":
+    if action in ["play", "search"]:
         if not query:
             return {"error": "query required for play"}
         try:

@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+from tools.stt import listen
 from core.explainer import explain
 from core.chainer import chain
 from core.smart_executor import smart_execute, smart_execute_with_critique
@@ -9,7 +10,6 @@ from core.planner import plan
 from core.executor import execute_task
 from core.daemon import start as daemon_start, stop as daemon_stop, is_running, get_pid
 from core.scheduler import schedule_every, schedule_at, launch_background
-from tools.stt import listen
 from memory.store import save, recall
 
 
@@ -135,7 +135,6 @@ def main():
 
     if sys.argv[1] == "--wakeword":
         from tools.wakeword import start as wakeword_start
-        from tools.stt import listen
 
         def on_wake():
             from tools.sidecar import speak
