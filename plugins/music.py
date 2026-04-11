@@ -15,26 +15,31 @@ def run(args: dict) -> dict:
         if not query:
             return {"error": "query required for play"}
         try:
-            stop_music()
-            # download audio to shared path
-            out_path = "/mnt/c/zyphos_sidecar/music.mp3"
-            win_path = r"C:\zyphos_sidecar\music.mp3"
+            # stop first
+            import requests as req
+            req.post("http://127.0.0.1:5000/stop_audio")
+            import time
+            time.sleep(1)  # wait for VLC to fully close
+            
+            # delete old file
+            import glob
+            for f in glob.glob("/mnt/c/zyphos_sidecar/music.*"):
+                os.remove(f)
+
+            # download
             result = subprocess.run(
-                ["yt-dlp", "-f", "bestaudio/best", 
+                ["yt-dlp", "-f", "bestaudio/best",
                  "-o", "/mnt/c/zyphos_sidecar/music.%(ext)s",
                  "--no-playlist",
                  f"ytsearch1:{query}"],
                 capture_output=True, text=True, timeout=120
             )
-            # find the downloaded file
-            import glob
             files = glob.glob("/mnt/c/zyphos_sidecar/music.*")
             if not files:
                 return {"error": "download failed"}
             out_path = files[0]
             win_path = r"C:\zyphos_sidecar\\" + os.path.basename(out_path)
-            import requests as req
-            r = req.post("http://127.0.0.1:5000/play_audio", json={"path": win_path})
+            req.post("http://127.0.0.1:5000/play_audio", json={"path": win_path})
             return {"status": "playing", "query": query}
         except Exception as e:
             return {"error": str(e)}
