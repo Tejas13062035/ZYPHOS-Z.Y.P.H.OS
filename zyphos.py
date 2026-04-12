@@ -171,38 +171,5 @@ def main():
     for goal in goals:
         run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode, critique=critique, chain_mode=chain_mode)
 
-    if sys.argv[1] == "--wake":
-        from tools.wakeword import listen_for_wake_word
-        def on_wake(transcript):
-            logger.info("Wake word triggered — listening for goal...")
-            from tools.stt import transcribe
-            goal = transcribe()
-            if goal:
-                run(goal)
-        listen_for_wake_word(on_wake)
-        sys.exit(0)
-
-    if sys.argv[1] == "--status":
-        state = ZypState.load()
-        print(f"\nGoal: {state.goal}")
-        print(f"Current step: {state.current_step}")
-        print(f"Completed: {len(state.completed_steps)} steps")
-        sys.exit(0)
-
-    if sys.argv[1] == "--memory":
-        query = " ".join(sys.argv[2:])
-        memory = Memory()
-        results = memory.search(query)
-        print("\nZ.Y.P.H.O.S MEMORY RECALL:")
-        for i, r in enumerate(results, 1):
-            print(f"{i}. {r}")
-        sys.exit(0)
-
-    goals = [g for g in sys.argv[1:] if not g.startswith("--")]
-    smart = "--smart" in sys.argv
-    smart_plan_mode = "--smart-plan" in sys.argv
-    for goal in goals:
-        run_goal(goal, smart=smart, smart_plan_mode=smart_plan_mode)
-
 if __name__ == "__main__":
     main()

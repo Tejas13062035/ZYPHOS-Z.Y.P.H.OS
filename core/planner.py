@@ -84,6 +84,16 @@ def plan(goal: str) -> list:
                 "result": None
             })
             i += 1
+
+        elif word == "open":
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"open {' '.join(words[i+1:])}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks

@@ -23,6 +23,19 @@ def execute_task(task: dict) -> dict:
         result = screenshot()
         result = {"status": "screenshot taken", "has_image": "image" in result}
 
+    elif "search" in desc and ("chrome" in desc or "browser" in desc or "tab" in desc):
+        import requests as req
+        query = desc.replace("search", "").replace("chrome", "").replace("browser", "").replace("tab", "").replace("in", "").strip()
+        search_url = f"https://www.google.com/search?q={query.replace(' ', '+')}"
+        r = req.post("http://127.0.0.1:5000/open_url", json={"url": search_url})
+        result = r.json()
+
+    elif "open" in desc and ("chrome" in desc or "tab" in desc or "browser" in desc):
+        import requests as req
+        url = "https://google.com"
+        r = req.post("http://127.0.0.1:5000/open_url", json={"url": url})
+        result = r.json()
+
     elif "scroll" in desc:
         parts = desc.split()
         try:
