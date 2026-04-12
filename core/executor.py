@@ -68,6 +68,10 @@ def execute_task(task: dict) -> dict:
         from plugins.music import stop_music
         result = stop_music()
 
+    elif "calendar" in desc or "schedule" in desc or "remind" in desc:
+        from plugins.calendar import run as cal_run
+        result = cal_run({"action": "today"})
+
     else:
         result = {"error": f"unknown task: {desc}"}
 
