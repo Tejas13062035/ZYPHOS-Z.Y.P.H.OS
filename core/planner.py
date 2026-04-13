@@ -94,6 +94,25 @@ def plan(goal: str) -> list:
             })
             break
 
+        elif word == "network" or word == "scan":
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"network scan",
+                "status": "pending",
+                "result": None
+            })
+            break
+
+        elif word == "speak" or word == "say":
+            text = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"speak {text}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks

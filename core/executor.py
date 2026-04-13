@@ -19,13 +19,34 @@ def execute_task(task: dict) -> dict:
         text = parts[1] if len(parts) > 1 else ""
         result = type_text(text)
 
+    elif "date" in desc or "time" in desc or "weather" in desc:
+        import datetime
+        import requests as req
+        now = datetime.datetime.now().strftime("%A, %B %d %Y, %I:%M %p")
+        text = f"The current date and time is {now}"
+        req.post("http://127.0.0.1:5000/speak", json={"text": text})
+        result = {"status": "spoken", "text": text}
+
+    elif desc.startswith("speak ") or desc.startswith("say "):
+        import requests as req
+        text = desc.replace("speak ", "").replace("say ", "").strip()
+        r = req.post("http://127.0.0.1:5000/speak", json={"text": text})
+        result = r.json()
+
+    elif "network" in desc or "scan" in desc or "devices" in desc:
+        from plugins.network_scan import run as net_run
+        result = net_run({"action": "scan", "target": "192.168.31"})
+
     elif "screenshot" in desc:
         result = screenshot()
         result = {"status": "screenshot taken", "has_image": "image" in result}
 
     elif "search" in desc and ("chrome" in desc or "browser" in desc or "tab" in desc):
         import requests as req
-        query = desc.replace("search", "").replace("chrome", "").replace("browser", "").replace("tab", "").replace("in", "").strip()
+        query = desc
+        for word in ["search", "in chrome", "in browser", "in tab", "chrome tab", "browser tab", "in the"]:
+            query = query.replace(word, "")
+        query = query.strip()
         search_url = f"https://www.google.com/search?q={query.replace(' ', '+')}"
         r = req.post("http://127.0.0.1:5000/open_url", json={"url": search_url})
         result = r.json()
