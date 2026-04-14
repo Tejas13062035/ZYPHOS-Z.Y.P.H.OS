@@ -51,10 +51,14 @@ def execute_task(task: dict) -> dict:
         r = req.post("http://127.0.0.1:5000/open_url", json={"url": search_url})
         result = r.json()
 
-    elif "open" in desc and ("chrome" in desc or "tab" in desc or "browser" in desc):
+    elif "open" in desc:
         import requests as req
-        url = "https://google.com"
-        r = req.post("http://127.0.0.1:5000/open_url", json={"url": url})
+        app_name = desc.replace("open", "").strip()
+        # if it's a URL
+        if "http" in app_name or "www" in app_name:
+            r = req.post("http://127.0.0.1:5000/open_url", json={"url": app_name})
+        else:
+            r = req.post("http://127.0.0.1:5000/open_app", json={"app": app_name})
         result = r.json()
 
     elif "scroll" in desc:
