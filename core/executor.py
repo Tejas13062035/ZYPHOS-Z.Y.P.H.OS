@@ -110,6 +110,24 @@ def execute_task(task: dict) -> dict:
         from plugins.calendar import run as cal_run
         result = cal_run({"action": "today"})
 
+    elif "email" in desc or "gmail" in desc:
+        from plugins.gmail import run as gmail_run
+        if "send" in desc:
+            result = gmail_run({"action": "send", "to": "", "subject": "", "body": desc})
+        else:
+            result = gmail_run({"action": "read"})
+
+    elif "drive" in desc:
+        from plugins.drive import run as drive_run
+        if "upload" in desc:
+            result = drive_run({"action": "upload", "file_path": desc.replace("drive upload", "").strip()})
+        elif "download" in desc:
+            result = drive_run({"action": "download", "query": desc.replace("drive download", "").strip()})
+        elif "search" in desc:
+            result = drive_run({"action": "search", "query": desc.replace("drive search", "").strip()})
+        else:
+            result = drive_run({"action": "list"})
+
     else:
         result = {"error": f"unknown task: {desc}"}
 
