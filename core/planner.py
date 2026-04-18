@@ -113,6 +113,16 @@ def plan(goal: str) -> list:
             })
             break
 
+        elif word == "write" and i + 1 < len(words):
+            text = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"type {text}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks
