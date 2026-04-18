@@ -14,6 +14,20 @@ def execute_task(task: dict) -> dict:
         except (ValueError, IndexError):
             result = {"error": "click requires x y coordinates"}
 
+    elif desc.startswith("remember "):
+        from core.personality import remember
+        fact = desc.replace("remember ", "").strip()
+        result = {"status": "ok", "result": remember(fact)}
+
+    elif desc.startswith("forget "):
+        from core.personality import forget
+        key = desc.replace("forget ", "").strip()
+        result = {"status": "ok", "result": forget(key)}
+
+    elif "what do you know about me" in desc or "recall personality" in desc:
+        from core.personality import recall_all
+        result = {"status": "ok", "result": recall_all()}
+
     elif "type" in desc:
         parts = desc.split("type ", 1)
         text = parts[1] if len(parts) > 1 else ""

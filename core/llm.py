@@ -17,27 +17,36 @@ PHI_MODEL = "phi-3.5-mini-instruct"
 LLAMA_URL = "http://localhost:1234/v1/chat/completions"
 LLAMA_MODEL = "lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF"
 
+PROFILE_FILE = os.path.expanduser("~/zyp/state/user_profile.txt")
+PERSONALITY_FILE = os.path.expanduser("~/zyp/state/personality.json")
+
+def load_profile():
+    lines = []
+    if os.path.exists(PROFILE_FILE):
+        with open(PROFILE_FILE) as f:
+            lines.append(f.read().strip())
+    if os.path.exists(PERSONALITY_FILE):
+        import json
+        with open(PERSONALITY_FILE) as f:
+            data = json.load(f)
+        for k, v in data.items():
+            lines.append(f"{k}: {v}")
+    return "\n".join(lines)
 
 def ask(prompt: str, system: str = "", max_tokens: int = 150) -> str:
-    if BACKEND == "llama":
-        url = LLAMA_URL
-        model = LLAMA_MODEL
-    else:
-        url = PHI_URL
-        model = PHI_MODEL
-
+    profile = load_profile()
+    full_system = f"USER PROFILE:\n{profile}\n\n{system}" if profile else system
     messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
+    if full_system:
+        messages.append({"role": "system", "content": full_system})
     messages.append({"role": "user", "content": prompt})
-
     try:
-        r = requests.post(url, json={
-            "model": model,
+        r = requests.post(LM_STUDIO_URL, json={
+            "model": MODEL,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": 0.2
-        }, timeout=180)
+        }, timeout=120)
         return r.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"LLM_ERROR: {e}"

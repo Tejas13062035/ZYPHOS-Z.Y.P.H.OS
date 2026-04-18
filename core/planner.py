@@ -150,6 +150,35 @@ def plan(goal: str) -> list:
             })
             break
 
+        elif word == "remember" and i + 1 < len(words):
+            fact = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"remember {fact}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
+        elif word == "forget" and i + 1 < len(words):
+            key = " ".join(words[i+1:])
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"forget {key}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
+        elif word == "what" and "know" in words and "me" in words:
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": "what do you know about me",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks
