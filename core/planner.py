@@ -123,6 +123,33 @@ def plan(goal: str) -> list:
             })
             break
 
+        elif word == "email" or word == "gmail":
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"email {' '.join(words[i+1:])}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
+        elif word == "drive":
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": f"drive {' '.join(words[i+1:])}",
+                "status": "pending",
+                "result": None
+            })
+            break
+
+        elif word == "read" and i + 1 < len(words) and "email" in words[i+1:]:
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": "email read",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks
