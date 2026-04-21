@@ -122,7 +122,10 @@ def execute_task(task: dict) -> dict:
 
     elif "calendar" in desc or "schedule" in desc or "remind" in desc:
         from plugins.calendar import run as cal_run
-        result = cal_run({"action": "today"})
+        if "today" in desc:
+            result = cal_run({"action": "today"})
+        else:
+            result = cal_run({"action": "list"})
 
     elif "email" in desc or "gmail" in desc:
         from plugins.gmail import run as gmail_run

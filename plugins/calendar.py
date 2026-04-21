@@ -52,8 +52,8 @@ def run(args: dict) -> dict:
                 end = now + datetime.timedelta(days=7)
             events_result = service.events().list(
                 calendarId="primary",
-                timeMin=now.isoformat() + "Z",
-                timeMax=end.isoformat() + "Z",
+                timeMin=now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                timeMax=end.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 maxResults=10,
                 singleEvents=True,
                 orderBy="startTime"
