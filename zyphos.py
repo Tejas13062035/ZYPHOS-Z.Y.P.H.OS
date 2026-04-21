@@ -161,6 +161,17 @@ def main():
         explain()
         return
 
+    if sys.argv[1] == "--research":
+        topic = " ".join(sys.argv[2:])
+        if not topic:
+            print("Usage: python zyphos.py --research 'your topic'")
+            return
+        from core.researcher import research
+        report = research(topic, depth=3)
+        print("\nREPORT:\n")
+        print(report)
+        return
+
     smart = "--smart" in sys.argv or os.environ.get("ZYPHOS_BACKEND", "phi") == "llama"
     smart_plan_mode = "--smart-plan" in sys.argv
     critique = "--critique" in sys.argv
