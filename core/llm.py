@@ -13,9 +13,8 @@ BACKEND = os.environ.get("ZYPHOS_BACKEND", "phi").lower()
 PHI_URL = "http://localhost:1234/v1/chat/completions"
 PHI_MODEL = "phi-3.5-mini-instruct"
 
-# --- Llama (main machine) ---
-LLAMA_URL = "http://localhost:1234/v1/chat/completions"
-LLAMA_MODEL = "lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF"
+OLLAMA_URL = "http://localhost:11434/v1/chat/completions"
+OLLAMA_MODEL = "gemma3:4b"
 
 PROFILE_FILE = os.path.expanduser("~/zyp/state/user_profile.txt")
 PERSONALITY_FILE = os.path.expanduser("~/zyp/state/personality.json")
@@ -41,8 +40,8 @@ def ask(prompt: str, system: str = "", max_tokens: int = 150) -> str:
         messages.append({"role": "system", "content": full_system})
     messages.append({"role": "user", "content": prompt})
     try:
-        r = requests.post(LM_STUDIO_URL, json={
-            "model": MODEL,
+        r = requests.post(OLLAMA_URL, json={
+            "model": OLLAMA_MODEL,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": 0.2
