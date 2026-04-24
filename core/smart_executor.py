@@ -1,5 +1,8 @@
 import os
 import json
+from plugins.calendar import run as calendar_run
+from plugins.gmail import run as gmail_run
+from plugins.drive import run as drive_run
 from core.plugin_loader import load_plugins
 from core.critic import critique
 from tools.search import search_summary
@@ -24,6 +27,9 @@ No explanation, no markdown, just raw JSON.
 Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
+- calendar: {"action": "list|today|add", "summary": str, "date": "YYYY-MM-DD", "time": "HH:MM"}
+- gmail: {"action": "send|read|search", "to": str, "subject": str, "body": str}
+- drive: {"action": "list|upload|download|search", "query": str}
 - screenshot: {}
 - click: {"x": int, "y": int}
 - type_text: {"text": str}
@@ -50,6 +56,9 @@ TOOL_MAP = {
     "read_file": lambda args: read_file(args["path"]) if os.path.exists(os.path.expanduser(args["path"])) else {"error": f"skipped: path does not exist: {args['path']}"},
     "write_file": lambda args: write_file(args["path"], args["content"]),
     "list_dir": lambda args: list_dir(args["path"]),
+    "calendar": lambda args: calendar_run(args),
+    "gmail": lambda args: gmail_run(args),
+    "drive": lambda args: drive_run(args),
     "delete_file": lambda args: delete_file(args["path"]),
     "run_shell": lambda args: run_shell(args["command"]),
 }

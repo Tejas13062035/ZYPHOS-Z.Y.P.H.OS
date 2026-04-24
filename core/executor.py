@@ -122,7 +122,19 @@ def execute_task(task: dict) -> dict:
 
     elif "calendar" in desc or "schedule" in desc or "remind" in desc:
         from plugins.calendar import run as cal_run
-        if "today" in desc:
+        if "add" in desc or "create" in desc or "new event" in desc:
+            import re
+            summary_match = re.search(r"event\s+(.+?)\s+on\s+", desc)
+            date_match = re.search(r"on\s+(\d{4}-\d{2}-\d{2})", desc)
+            time_match = re.search(r"at\s+(\d{2}:\d{2})", desc)
+            result = cal_run({
+                "action": "add",
+                "summary": summary_match.group(1) if summary_match else "New Event",
+                "date": date_match.group(1) if date_match else "",
+                "time": time_match.group(1) if time_match else "09:00"
+            })
+
+        elif "today" in desc:
             result = cal_run({"action": "today"})
         else:
             result = cal_run({"action": "list"})
