@@ -26,17 +26,29 @@ def run(args: dict) -> dict:
             for f in glob.glob("/mnt/c/zyphos_sidecar/music.*"):
                 os.remove(f)
 
-            # download
-            result = subprocess.run(
-                ["yt-dlp", "-f", "bestaudio/best",
-                 "-o", "/mnt/c/zyphos_sidecar/music.%(ext)s",
-                 "--no-playlist",
-                 f"ytsearch1:{query}"],
-                capture_output=True, text=True, timeout=120
-            )
-            files = glob.glob("/mnt/c/zyphos_sidecar/music.*")
-            if not files:
-                return {"error": "download failed"}
+            # try multiple queries
+            queries = [
+                query,
+                query.replace("by", "").strip(),
+                query.split("by")[0].strip() if "by" in query else query
+            ]
+            
+            out_path = None
+            for q in queries:
+                result = subprocess.run(
+                    ["yt-dlp", "-f", "bestaudio/best",
+                     "-o", "/mnt/c/zyphos_sidecar/music.%(ext)s",
+                     "--no-playlist",
+                     f"ytsearch1:{q}"],
+                    capture_output=True, text=True, timeout=120
+                )
+                files = glob.glob("/mnt/c/zyphos_sidecar/music.*")
+                if files:
+                    out_path = files[0]
+                    break
+
+            if not out_path:
+                return {"error": "download failed after retries"}
             out_path = files[0]
             win_path = r"C:\zyphos_sidecar\\" + os.path.basename(out_path)
             req.post("http://127.0.0.1:5000/play_audio", json={"path": win_path})
