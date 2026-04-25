@@ -49,3 +49,23 @@ def ask(prompt: str, system: str = "", max_tokens: int = 150) -> str:
         return r.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"LLM_ERROR: {e}"
+
+def ask_groq(prompt: str, system: str = "", max_tokens: int = 150) -> str:
+    try:
+        import os
+        from groq import Groq
+        from dotenv import load_dotenv
+        load_dotenv(os.path.expanduser("~/zyp/.env"))
+        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=max_tokens
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"LLM_ERROR: {e}"

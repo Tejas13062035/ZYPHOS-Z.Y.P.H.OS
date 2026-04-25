@@ -95,6 +95,21 @@ def main():
             print("ERROR: --schedule needs --every SECONDS or --at HH:MM")
         return
 
+    if sys.argv[1] == "--after":
+        seconds = int(sys.argv[2])
+        goal = " ".join(sys.argv[3:])
+        print(f"SCHEDULED: '{goal}' in {seconds} seconds")
+        import threading
+        def delayed():
+            import time as _time
+            _time.sleep(seconds)
+            run_goal(goal, smart=True, smart_plan_mode=True)
+        t = threading.Thread(target=delayed, daemon=False)
+        t.start()
+        print(f"Waiting {seconds}s... (Ctrl+C to cancel)")
+        t.join()
+        return
+
     if sys.argv[1] == "--smart-daemon":
         flag_file = os.path.expanduser("~/zyp/state/smart_mode")
         if "--off" in sys.argv:
@@ -172,8 +187,8 @@ def main():
         print(report)
         return
 
-    smart = "--smart" in sys.argv or os.environ.get("ZYPHOS_BACKEND", "phi") == "llama"
-    smart_plan_mode = "--smart-plan" in sys.argv
+    smart = True
+    smart_plan_mode = True
     critique = "--critique" in sys.argv
     chain_mode = "--chain" in sys.argv
     goals = [g for g in sys.argv[1:] if not g.startswith("--")]

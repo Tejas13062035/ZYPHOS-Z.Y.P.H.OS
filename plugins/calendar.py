@@ -69,7 +69,9 @@ def run(args: dict) -> dict:
 
         elif action == "add":
             summary = args.get("summary", "Untitled")
-            date = args.get("date", datetime.date.today().isoformat())
+            date = args.get("date", "")
+            if not date or date in ["current", "today", "now"]:
+                date = datetime.date.today().isoformat()
             time = args.get("time", "09:00")
             start_dt = f"{date}T{time}:00"
             end_dt = f"{date}T{str(int(time[:2])+1).zfill(2)}{time[2:]}:00"

@@ -7,7 +7,7 @@ from core.plugin_loader import load_plugins
 from core.critic import critique
 from tools.search import search_summary
 from tools.vision import look
-from core.llm import ask
+from core.llm import ask_groq as ask
 from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
 from tools.filesystem import read_file, write_file, list_dir, delete_file
 from tools.shell import run_shell
