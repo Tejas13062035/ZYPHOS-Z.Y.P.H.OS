@@ -179,6 +179,15 @@ def plan(goal: str) -> list:
             })
             break
 
+        elif word in ["calendar", "schedule", "events"]:
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": "calendar list",
+                "status": "pending",
+                "result": None
+            })
+            break
+
         else:
             i += 1
     return tasks
