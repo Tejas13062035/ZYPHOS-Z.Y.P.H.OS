@@ -1,5 +1,6 @@
 import os
 import json
+from plugins.system_stats import run as stats_run
 from plugins.weather import run as weather_run
 from plugins.calendar import run as calendar_run
 from plugins.gmail import run as gmail_run
@@ -28,6 +29,7 @@ No explanation, no markdown, just raw JSON.
 Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
+- system_stats: {"speak": bool}
 - weather: {"city": str, "speak": bool}
 - calendar: {"action": "list|today|add", "summary": str, "date": "YYYY-MM-DD", "time": "HH:MM"}
 - gmail: {"action": "send|read|search", "to": str, "subject": str, "body": str}
@@ -49,6 +51,7 @@ Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 TOOL_MAP = {
     "search": lambda args: {"status": "ok", "result": search_summary(args.get("query", args[0] if isinstance(args, list) else ""))},
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
+    "system_stats": lambda args: stats_run(args),
     "screenshot": lambda args: screenshot(),
     "click": lambda args: click(args["x"], args["y"]),
     "type_text": lambda args: type_text(args["text"]),
