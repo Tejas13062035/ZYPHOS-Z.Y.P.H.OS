@@ -1,5 +1,6 @@
 import os
 import json
+from plugins.weather import run as weather_run
 from plugins.calendar import run as calendar_run
 from plugins.gmail import run as gmail_run
 from plugins.drive import run as drive_run
@@ -27,6 +28,7 @@ No explanation, no markdown, just raw JSON.
 Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
+- weather: {"city": str, "speak": bool}
 - calendar: {"action": "list|today|add", "summary": str, "date": "YYYY-MM-DD", "time": "HH:MM"}
 - gmail: {"action": "send|read|search", "to": str, "subject": str, "body": str}
 - drive: {"action": "list|upload|download|search", "query": str}
@@ -51,6 +53,7 @@ TOOL_MAP = {
     "click": lambda args: click(args["x"], args["y"]),
     "type_text": lambda args: type_text(args["text"]),
     "scroll": lambda args: scroll(args["x"], args["y"], args.get("amount", 3)),
+    "weather": lambda args: weather_run(args),
     "drag": lambda args: drag(args["x1"], args["y1"], args["x2"], args["y2"]),
     "hotkey": lambda args: hotkey(args["keys"]),
     "read_file": lambda args: read_file(args["path"]) if os.path.exists(os.path.expanduser(args["path"])) else {"error": f"skipped: path does not exist: {args['path']}"},
