@@ -1,6 +1,7 @@
 import os
 import json
 from plugins.system_stats import run as stats_run
+from plugins.timer import run as timer_run
 from plugins.clipboard import run as clipboard_run
 from plugins.weather import run as weather_run
 from plugins.calendar import run as calendar_run
@@ -32,6 +33,7 @@ Available tools:
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
 - clipboard: {"action": "get|set", "text": str}
+- timer: {"minutes": float, "seconds": float, "message": str}
 - weather: {"city": str, "speak": bool}
 - calendar: {"action": "list|today|add", "summary": str, "date": "YYYY-MM-DD", "time": "HH:MM"}
 - gmail: {"action": "send|read|search", "to": str, "subject": str, "body": str}
@@ -63,6 +65,7 @@ TOOL_MAP = {
     "drag": lambda args: drag(args["x1"], args["y1"], args["x2"], args["y2"]),
     "hotkey": lambda args: hotkey(args["keys"]),
     "read_file": lambda args: read_file(args["path"]) if os.path.exists(os.path.expanduser(args["path"])) else {"error": f"skipped: path does not exist: {args['path']}"},
+    "timer": lambda args: timer_run(args),
     "write_file": lambda args: write_file(args["path"], args["content"]),
     "list_dir": lambda args: list_dir(args["path"]),
     "calendar": lambda args: calendar_run(args),
