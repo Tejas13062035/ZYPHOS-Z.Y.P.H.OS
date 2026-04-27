@@ -1,6 +1,7 @@
 import os
 import json
 from plugins.system_stats import run as stats_run
+from plugins.youtube import run as youtube_run
 from plugins.file_organizer import run as organizer_run
 from plugins.notes import run as notes_run
 from plugins.timer import run as timer_run
@@ -34,6 +35,7 @@ Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
+- youtube: {"action": "search|play|playlist", "query": str}
 - file_organizer: {"path": str}
 - notes: {"action": "add|read|list|delete", "note": str, "title": str}
 - clipboard: {"action": "get|set", "text": str}
@@ -61,6 +63,7 @@ TOOL_MAP = {
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "system_stats": lambda args: stats_run(args),
     "screenshot": lambda args: screenshot(),
+    "youtube": lambda args: youtube_run(args),
     "file_organizer": lambda args: organizer_run(args),
     "click": lambda args: click(args["x"], args["y"]),
     "type_text": lambda args: type_text(args["text"]),
