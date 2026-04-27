@@ -187,6 +187,11 @@ def main():
         print(report)
         return
 
+    if sys.argv[1] == "--briefing":
+        from scripts.briefing import briefing
+        briefing()
+        return
+
     smart = True
     smart_plan_mode = True
     critique = "--critique" in sys.argv
