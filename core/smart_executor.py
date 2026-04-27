@@ -1,6 +1,7 @@
 import os
 import json
 from plugins.system_stats import run as stats_run
+from plugins.notes import run as notes_run
 from plugins.timer import run as timer_run
 from plugins.clipboard import run as clipboard_run
 from plugins.weather import run as weather_run
@@ -32,6 +33,7 @@ Available tools:
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
+- notes: {"action": "add|read|list|delete", "note": str, "title": str}
 - clipboard: {"action": "get|set", "text": str}
 - timer: {"minutes": float, "seconds": float, "message": str}
 - weather: {"city": str, "speak": bool}
@@ -61,6 +63,7 @@ TOOL_MAP = {
     "type_text": lambda args: type_text(args["text"]),
     "scroll": lambda args: scroll(args["x"], args["y"], args.get("amount", 3)),
     "clipboard": lambda args: clipboard_run(args),
+    "notes": lambda args: notes_run(args),
     "weather": lambda args: weather_run(args),
     "drag": lambda args: drag(args["x1"], args["y1"], args["x2"], args["y2"]),
     "hotkey": lambda args: hotkey(args["keys"]),
