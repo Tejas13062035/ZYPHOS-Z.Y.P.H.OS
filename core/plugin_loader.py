@@ -3,12 +3,13 @@ import importlib.util
 
 PLUGIN_DIR = os.path.expanduser("~/zyp/plugins")
 
+_cache = None
 
 def load_plugins() -> dict:
-    """
-    Scans plugins/ directory and loads all valid plugin files.
-    Returns dict of {tool_name: run_function}
-    """
+    global _cache
+    if _cache is not None:
+        return _cache
+
     plugins = {}
     if not os.path.exists(PLUGIN_DIR):
         return plugins
@@ -39,4 +40,5 @@ def load_plugins() -> dict:
         except Exception as e:
             print(f"[PLUGIN] Failed to load {filename}: {e}")
 
+    _cache = plugins
     return plugins

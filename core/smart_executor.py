@@ -33,6 +33,7 @@ SYSTEM_PROMPT_BASE = """You are a task execution engine. Given a task descriptio
 No explanation, no markdown, just raw JSON.
 
 Available tools:
+- open_app: {"app": str}  → opens Windows app (notepad, chrome, calculator, spotify etc). ALWAYS use this for opening apps, never run_shell for Windows apps.
 - search <query>  → web search, returns top results
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
@@ -62,6 +63,7 @@ Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 
 TOOL_MAP = {
     "search": lambda args: {"status": "ok", "result": search_summary(args.get("query", args[0] if isinstance(args, list) else ""))},
+    "open_app": lambda args: __import__('requests').post('http://127.0.0.1:5000/open_app', json={"app": args.get("app", "")}).json(),
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "system_stats": lambda args: stats_run(args),
     "screenshot": lambda args: screenshot(),
