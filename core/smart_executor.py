@@ -2,6 +2,7 @@ import os
 import json
 from plugins.system_stats import run as stats_run
 from plugins.security import run as security_run
+from plugins.port_scanner import run as port_scan_run
 from plugins.whatsapp_bulk import run as wa_bulk_run
 from plugins.youtube import run as youtube_run
 from plugins.file_organizer import run as organizer_run
@@ -37,6 +38,7 @@ Available tools:
 - open_app: {"app": str}  → opens Windows app (notepad, chrome, calculator, spotify etc). ALWAYS use this for opening apps, never run_shell for Windows apps.
 - search <query>  → web search, returns top results
 - security: {"action": "password|ip_lookup|dns|whois|breach_check|wifi_info", "target": str}
+- port_scanner: {"target": str, "ports": "1-1000"}
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
 - whatsapp_bulk: {"contacts": [str], "message": str}
@@ -70,6 +72,7 @@ TOOL_MAP = {
     "system_stats": lambda args: stats_run(args),
     "screenshot": lambda args: screenshot(),
     "security": lambda args: security_run(args),
+    "port_scanner": lambda args: port_scan_run(args),
     "whatsapp_bulk": lambda args: wa_bulk_run(args),
     "youtube": lambda args: youtube_run(args),
     "file_organizer": lambda args: organizer_run(args),
