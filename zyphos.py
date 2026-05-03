@@ -192,6 +192,11 @@ def main():
         briefing()
         return
 
+    if sys.argv[1] == "--greet":
+        from core.greeter import greet
+        greet()
+        return
+
     smart = True
     smart_plan_mode = True
     critique = "--critique" in sys.argv
