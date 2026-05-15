@@ -157,6 +157,11 @@ def execute_task(task: dict) -> dict:
         else:
             result = drive_run({"action": "list"})
 
+    elif "speak" in desc:
+        text = desc.replace("speak", "").strip()
+        from tools.sidecar import speak
+        result = speak(text)
+
     else:
         result = {"error": f"unknown task: {desc}"}
 

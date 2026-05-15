@@ -1,5 +1,6 @@
 import os
 import json
+from tools.sidecar import speak
 from plugins.system_stats import run as stats_run
 from plugins.security import run as security_run
 from plugins.port_scanner import run as port_scan_run
@@ -41,6 +42,8 @@ Available tools:
 - port_scanner: {"target": str, "ports": "1-1000"}
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
+- speak: {"text": str} — speak text out loud via TTS
+- text_to_speech: {"text": str} — alias for speak
 - whatsapp_bulk: {"contacts": [str], "message": str}
 - timer: {"minutes": float, "seconds": float, "message": str, "block": bool}  → set block=true when next task should wait for timer
 - music: {"action": "play|stop", "query": str}  → plays audio via VLC (PREFERRED for playing songs)
@@ -74,6 +77,8 @@ TOOL_MAP = {
     "system_stats": lambda args: stats_run(args),
     "screenshot": lambda args: screenshot(),
     "security": lambda args: security_run(args),
+    "text_to_speech": lambda args: speak(args.get("text", "")),
+    "speak": lambda args: speak(args.get("text", "")),
     "port_scanner": lambda args: port_scan_run(args),
     "whatsapp_bulk": lambda args: wa_bulk_run(args),
     "youtube": lambda args: youtube_run(args),
