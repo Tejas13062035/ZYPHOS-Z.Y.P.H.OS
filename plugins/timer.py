@@ -18,8 +18,15 @@ def run(args: dict) -> dict:
     minutes = float(args.get("minutes", 1))
     seconds = float(args.get("seconds", 0))
     message = args.get("message", f"Timer done! {minutes} minutes are up.")
-    
+    block = args.get("block", False)
+
     total_seconds = minutes * 60 + seconds
+
+    if block:
+        print(f"TIMER: waiting {total_seconds}s...")
+        time.sleep(total_seconds)
+        _ring(message)
+        return {"status": "done", "minutes": minutes, "message": message}
 
     def countdown():
         time.sleep(total_seconds)
@@ -27,6 +34,7 @@ def run(args: dict) -> dict:
 
     t = threading.Thread(target=countdown, daemon=True)
     t.start()
+    return {"status": "timer set", "minutes": minutes, "message": message}
 
     return {
         "status": "timer set",

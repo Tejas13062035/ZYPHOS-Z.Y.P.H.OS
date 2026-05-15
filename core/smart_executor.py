@@ -42,7 +42,9 @@ Available tools:
 - look: {"prompt": str}  — takes a screenshot and describes what's on screen
 - system_stats: {"speak": bool}
 - whatsapp_bulk: {"contacts": [str], "message": str}
-- youtube: {"action": "search|play|playlist", "query": str}
+- timer: {"minutes": float, "seconds": float, "message": str, "block": bool}  → set block=true when next task should wait for timer
+- music: {"action": "play|stop", "query": str}  → plays audio via VLC (PREFERRED for playing songs)
+- youtube: {"action": "search|playlist", "query": str}  → opens YouTube in browser (use only when user wants to WATCH or BROWSE, not just listen)
 - file_organizer: {"path": str}
 - notes: {"action": "add|read|list|delete", "note": str, "title": str}
 - clipboard: {"action": "get|set", "text": str}
