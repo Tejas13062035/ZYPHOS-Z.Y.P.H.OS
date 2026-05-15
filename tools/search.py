@@ -1,3 +1,7 @@
+import warnings
+warnings.filterwarnings("ignore")
+import logging
+logging.getLogger("ddgs").setLevel(logging.ERROR)
 from ddgs import DDGS
 
 def web_search(query: str, max_results: int = 5) -> list:

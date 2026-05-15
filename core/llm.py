@@ -7,14 +7,11 @@ import requests
 # Llama 3.1 8B on the main machine.
 # Default: phi (current machine, LM Studio)
 # -----------------------------------------------------------
-BACKEND = os.environ.get("ZYPHOS_BACKEND", "phi").lower()
-
-# --- Phi (current machine) ---
-PHI_URL = "http://localhost:1234/v1/chat/completions"
-PHI_MODEL = "phi-3.5-mini-instruct"
 
 OLLAMA_URL = "http://localhost:11434/v1/chat/completions"
-OLLAMA_MODEL = "gemma3:4b"
+OLLAMA_MODEL = "hermes3:3b"
+
+# Main machine: change OLLAMA_MODEL to "qwen2.5:7b" when ready
 
 PROFILE_FILE = os.path.expanduser("~/zyp/state/user_profile.txt")
 PERSONALITY_FILE = os.path.expanduser("~/zyp/state/personality.json")
