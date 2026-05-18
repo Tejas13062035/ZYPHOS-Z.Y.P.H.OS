@@ -26,6 +26,27 @@ def hotkey(keys: list):
     r = requests.post(f"{SIDECAR_URL}/hotkey", json={"keys": keys})
     return r.json()
 
-def speak(text: str):
-    r = requests.post(f"{SIDECAR_URL}/speak", json={"text": text})
+def speak(text: str, voice: str = "en-GB-RyanNeural"):
+    return speak_edge(text, voice)
+
+def speak_edge(text: str, voice: str = "en-GB-RyanNeural"):
+    import subprocess
+    audio_wsl = "/tmp/zyp_tts.mp3"
+    audio_win_wsl = "/mnt/c/zyphos_sidecar/zyp_tts.mp3"
+    audio_win = r"C:\zyphos_sidecar\zyp_tts.mp3"
+    
+    # generate MP3
+    subprocess.run([
+        "edge-tts",
+        "--text", text,
+        "--voice", voice,
+        "--write-media", audio_wsl
+    ])
+    
+    # copy to Windows-accessible path
+    import shutil
+    shutil.copy(audio_wsl, audio_win_wsl)
+    
+    # play via sidecar
+    r = requests.post(f"{SIDECAR_URL}/play", json={"path": audio_win})
     return r.json()
