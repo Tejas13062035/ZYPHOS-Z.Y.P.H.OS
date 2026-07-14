@@ -1,6 +1,8 @@
 import warnings
 warnings.filterwarnings("ignore")
 import logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 logging.getLogger("ddgs").setLevel(logging.ERROR)
 from ddgs import DDGS
 

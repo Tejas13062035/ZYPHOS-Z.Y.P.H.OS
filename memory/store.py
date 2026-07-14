@@ -1,3 +1,8 @@
+import warnings
+import os
+warnings.filterwarnings("ignore")
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import json
 import os
 import numpy as np
