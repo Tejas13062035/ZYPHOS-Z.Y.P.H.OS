@@ -32,20 +32,7 @@ def load_profile():
 def ask(prompt: str, system: str = "", max_tokens: int = 150) -> str:
     profile = load_profile()
     full_system = f"USER PROFILE:\n{profile}\n\n{system}" if profile else system
-    messages = []
-    if full_system:
-        messages.append({"role": "system", "content": full_system})
-    messages.append({"role": "user", "content": prompt})
-    try:
-        r = requests.post(OLLAMA_URL, json={
-            "model": OLLAMA_MODEL,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "temperature": 0.2
-        }, timeout=120)
-        return r.json()["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        return f"LLM_ERROR: {e}"
+    return ask_cerebras(prompt, full_system, max_tokens)
 
 def ask_groq(prompt: str, system: str = "", max_tokens: int = 150) -> str:
     try:
@@ -66,3 +53,49 @@ def ask_groq(prompt: str, system: str = "", max_tokens: int = 150) -> str:
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"LLM_ERROR: {e}"
+
+def ask_gemini(prompt: str, system: str = "", max_tokens: int = 500) -> str:
+    try:
+        from google import genai
+        from google.genai import types
+        from dotenv import load_dotenv
+        load_dotenv(os.path.expanduser("~/zyp/.env"))
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        config = types.GenerateContentConfig(
+            system_instruction=system if system else None,
+            max_output_tokens=max_tokens
+        )
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt,
+            config=config
+        )
+        return response.text.strip()
+    except Exception as e:
+        return f"LLM_ERROR: {e}"
+
+def ask_cerebras(prompt: str, system: str = "", max_tokens: int = 500) -> str:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(os.path.expanduser("~/zyp/.env"))
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        r = requests.post(
+            "https://api.cerebras.ai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {os.getenv('CEREBRAS_API_KEY')}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-oss-120b",
+                "messages": messages,
+                "max_tokens": max_tokens
+            },
+            timeout=30
+        )
+        data = r.json()
+        return data["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        return f"LLM_ERROR: {e}, raw: {r.text[:200] if 'r' in dir() else ''}"
