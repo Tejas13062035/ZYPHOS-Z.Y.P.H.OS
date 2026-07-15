@@ -190,13 +190,20 @@ def plan(goal: str) -> list:
 
         
         elif word in ["joke", "jokes"]:
-            tasks.append({
-                "id": str(uuid.uuid4())[:8],
-                "description": "joke",
-                "status": "pending",
-                "result": None
-            })
-            i += 1
+            count = 1
+            for p in words:
+                if p.isdigit():
+                    count = int(p)
+                    break
+            for _ in range(count):
+                tasks.append({
+                    "id": str(uuid.uuid4())[:8],
+                    "description": "joke",
+                    "status": "pending",
+                    "result": None
+                })
+            i += len(words)  # consume rest
+            break
 
         else:
             i += 1

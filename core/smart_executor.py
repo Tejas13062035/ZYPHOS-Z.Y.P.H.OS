@@ -37,7 +37,7 @@ SYSTEM_PROMPT_BASE = """You are a task execution engine. Given a task descriptio
 No explanation, no markdown, just raw JSON.
 
 Available tools:
-- joke: {} — get a random programming joke
+- joke: {} — get a random joke
 - open_app: {"app": str}  → opens Windows app (notepad, chrome, calculator, spotify etc). ALWAYS use this for opening apps, never run_shell for Windows apps.
 - search <query>  → web search, returns top results
 - security: {"action": "password|ip_lookup|dns|whois|breach_check|wifi_info", "target": str}
@@ -72,12 +72,45 @@ Available tools:
 
 Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 
+
+def _run_joke(args, desc=""):
+    import re
+    import time
+    import subprocess
+    count = args.get("count", 1)
+    if count == 1:
+        match = re.search(r'\b(\d+)\b', desc)
+        if match:
+            count = int(match.group(1))
+    jokes = []
+    for i in range(count):
+        r = joke_run({"count": 1, "category": args.get("category", "Misc,Dark,Pun,Spooky")})
+        joke_text = r.get("joke", "")
+        if joke_text:
+            jokes.append(joke_text)
+            try:
+                # generate mp3 to a unique file per joke
+                audio_wsl = f"/tmp/zyp_joke_{i}.mp3"
+                audio_win = f"C:\\zyphos_sidecar\\zyp_joke_{i}.mp3"
+                audio_win_wsl = f"/mnt/c/zyphos_sidecar/zyp_joke_{i}.mp3"
+                subprocess.run(["edge-tts", "--text", joke_text,
+                    "--voice", "en-GB-RyanNeural",
+                    "--write-media", audio_wsl])
+                import shutil
+                shutil.copy(audio_wsl, audio_win_wsl)
+                import requests
+                requests.post("http://127.0.0.1:5000/play", json={"path": audio_win})
+                time.sleep(5)
+            except Exception as e:
+                print(f"[JOKE TTS ERROR] {e}")
+    return {"status": "ok", "jokes": jokes, "result": "\n".join(jokes)}
+
 TOOL_MAP = {
     "search": lambda args: {"status": "ok", "result": search_summary(args.get("query", args[0] if isinstance(args, list) else ""))},
     "open_app": lambda args: __import__('requests').post('http://127.0.0.1:5000/open_app', json={"app": args.get("app", "")}).json(),
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "system_stats": lambda args: stats_run(args),
-    "joke": lambda args: joke_run(),
+    "joke": lambda args: _run_joke(args),
     "screenshot": lambda args: screenshot(),
     "security": lambda args: security_run(args),
     "text_to_speech": lambda args: speak(args.get("text", "")),
@@ -110,6 +143,7 @@ _plugins = load_plugins()
 for _name, _plugin in _plugins.items():
     TOOL_MAP[_name] = _plugin["run"]
 
+
 def smart_execute(task: dict) -> dict:
     desc = task.get("description", "")
     response = ask(desc, system=_build_system_prompt(), max_tokens=100)
@@ -137,7 +171,10 @@ def smart_execute(task: dict) -> dict:
             task["result"] = {"error": f"unknown tool: {tool}"}
             return task
 
-        result = TOOL_MAP[tool](args)
+        if tool == "joke":
+            result = _run_joke(args, desc)
+        else:
+            result = TOOL_MAP[tool](args)
         task["status"] = "done"
         task["result"] = {
             "result": str(result),
@@ -175,3 +212,4 @@ def smart_execute_with_critique(task: str, max_retries: int = 2) -> str:
             print(f"[CRITIC] Max retries reached. Returning last result.")
 
     return result
+

@@ -164,7 +164,17 @@ def execute_task(task: dict) -> dict:
 
     elif "joke" in desc:
         from plugins.joke import run as joke_run
-        result = joke_run()
+        from tools.sidecar import speak
+        parts = desc.split()
+        count = 1
+        for p in parts:
+            if p.isdigit():
+                count = int(p)
+                break
+        result = joke_run({"count": count, "category": "Any"})
+        joke_text = result.get("joke", "")
+        if joke_text:
+            speak(joke_text)
 
     else:
         result = {"error": f"unknown task: {desc}"}

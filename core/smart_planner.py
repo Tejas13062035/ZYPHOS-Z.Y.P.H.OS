@@ -19,7 +19,9 @@ goal: "type hello world" → [{"description": "type hello world"}]
 goal: "press ctrl c" → [{"description": "hotkey ctrl c"}]
 goal: "screenshot then type hi" → [{"description": "screenshot"}, {"description": "type hi"}]
 goal: "tell a joke" → [{"description": "joke"}]
-goal: "say a joke" → [{"description": "joke"}]"""
+goal: "say a joke" → [{"description": "joke"}]
+goal: "tell 2 jokes" → [{"description": "joke"}, {"description": "joke"}]
+goal: "tell 3 jokes" → [{"description": "joke"}, {"description": "joke"}, {"description": "joke"}]"""
 def smart_plan(goal: str) -> list:
     import uuid
     response = ask(goal, system=SYSTEM_PROMPT, max_tokens=300)
