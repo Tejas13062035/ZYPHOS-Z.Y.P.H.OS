@@ -16,7 +16,7 @@ def run(args=None):
             r = requests.get("https://api.nasa.gov/planetary/apod",
                 params={"api_key": api_key}, timeout=15)
             d = r.json()
-            result = f"{d.get('title', '')}: {d.get('explanation', '')[:300]}..."
+            result = f"{d.get('title', '')}: {d.get('explanation', '')[:800]}..."
             return {"status": "ok", "result": result, "url": d.get("url", "")}
 
         elif action == "asteroids":

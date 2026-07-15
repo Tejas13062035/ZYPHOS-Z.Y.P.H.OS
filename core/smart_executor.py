@@ -76,7 +76,6 @@ Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 def _run_joke(args, desc=""):
     import re
     import time
-    import subprocess
     count = args.get("count", 1)
     if count == 1:
         match = re.search(r'\b(\d+)\b', desc)
@@ -84,25 +83,12 @@ def _run_joke(args, desc=""):
             count = int(match.group(1))
     jokes = []
     for i in range(count):
-        r = joke_run({"count": 1, "category": args.get("category", "Misc,Dark,Pun,Spooky")})
+        r = joke_run({"count": 1, "category": args.get("category", "Any")})
         joke_text = r.get("joke", "")
         if joke_text:
             jokes.append(joke_text)
-            try:
-                # generate mp3 to a unique file per joke
-                audio_wsl = f"/tmp/zyp_joke_{i}.mp3"
-                audio_win = f"C:\\zyphos_sidecar\\zyp_joke_{i}.mp3"
-                audio_win_wsl = f"/mnt/c/zyphos_sidecar/zyp_joke_{i}.mp3"
-                subprocess.run(["edge-tts", "--text", joke_text,
-                    "--voice", "en-GB-RyanNeural",
-                    "--write-media", audio_wsl])
-                import shutil
-                shutil.copy(audio_wsl, audio_win_wsl)
-                import requests
-                requests.post("http://127.0.0.1:5000/play", json={"path": audio_win})
-                time.sleep(5)
-            except Exception as e:
-                print(f"[JOKE TTS ERROR] {e}")
+            speak(joke_text)  # uses speak_edge with timestamps now
+            time.sleep(2)    # small gap between jokes
     return {"status": "ok", "jokes": jokes, "result": "\n".join(jokes)}
 
 TOOL_MAP = {
@@ -200,7 +186,7 @@ def smart_execute(task: dict) -> dict:
                 else:
                     result_text = str(result)
                 if result_text and len(result_text) > 5:
-                    speak(str(result_text)[:500])  # cap at 500 chars to avoid very long TTS
+                    speak(str(result_text)[:1000])  # cap at 1000 chars to avoid very long TTS
     except Exception as e:
         task["status"] = "done"
         task["result"] = {"error": f"smart_execute failed: {e}", "raw": response}
