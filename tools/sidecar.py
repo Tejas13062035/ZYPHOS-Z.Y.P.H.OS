@@ -31,22 +31,21 @@ def speak(text: str, voice: str = "en-GB-RyanNeural"):
 
 def speak_edge(text: str, voice: str = "en-GB-RyanNeural"):
     import subprocess
-    audio_wsl = "/tmp/zyp_tts.mp3"
-    audio_win_wsl = "/mnt/c/zyphos_sidecar/zyp_tts.mp3"
-    audio_win = r"C:\zyphos_sidecar\zyp_tts.mp3"
-    
-    # generate MP3
+    import shutil
+    import time
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%H%M%S%f")
+    audio_wsl = f"/tmp/zyp_tts_{timestamp}.mp3"
+    audio_win_wsl = f"/mnt/c/zyphos_sidecar/zyp_tts_{timestamp}.mp3"
+    audio_win = f"C:\\zyphos_sidecar\\zyp_tts_{timestamp}.mp3"
     subprocess.run([
-        "edge-tts",
-        "--text", text,
+        "edge-tts", "--text", text,
         "--voice", voice,
         "--write-media", audio_wsl
     ])
-    
-    # copy to Windows-accessible path
-    import shutil
     shutil.copy(audio_wsl, audio_win_wsl)
-    
-    # play via sidecar
     r = requests.post(f"{SIDECAR_URL}/play", json={"path": audio_win})
+    # wait based on text length — roughly 15 chars per second for en-GB-RyanNeural
+    wait_time = max(2, len(text) / 15)
+    time.sleep(wait_time)
     return r.json()

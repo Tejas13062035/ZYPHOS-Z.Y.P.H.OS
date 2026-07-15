@@ -175,12 +175,32 @@ def smart_execute(task: dict) -> dict:
             result = _run_joke(args, desc)
         else:
             result = TOOL_MAP[tool](args)
+
         task["status"] = "done"
         task["result"] = {
             "result": str(result),
             "tool": tool,
             "args": args
         }
+
+        # auto-speak for conversational goals
+        speak_triggers = ["tell me", "what is", "what are", "read", "who is", "show me", "how many", "where is", "when is"]
+        original_goal = desc.lower()
+        if any(t in original_goal for t in speak_triggers):
+            if tool not in ["joke", "speak", "text_to_speech", "type_text", "screenshot", "click", "hotkey", "music"]:
+                result_text = ""
+                if isinstance(result, dict):
+                    # try summary first, then result, then str
+                    result_text = (
+                        result.get("summary") or
+                        result.get("result") or
+                        result.get("description") or
+                        str(result)
+                    )
+                else:
+                    result_text = str(result)
+                if result_text and len(result_text) > 5:
+                    speak(str(result_text)[:500])  # cap at 500 chars to avoid very long TTS
     except Exception as e:
         task["status"] = "done"
         task["result"] = {"error": f"smart_execute failed: {e}", "raw": response}
