@@ -30,8 +30,11 @@ def run(args=None):
     elif action == "commits":
         r = requests.get(f"https://api.github.com/repos/{GITHUB_USERNAME}/{target}/commits?per_page=5", headers=headers)
         data = r.json()
-        lines = [f"- {c['commit']['message'][:80]}" for c in data[:5]]
-        result = "\n".join(lines)
+        if isinstance(data, list):
+            lines = [f"- {c['commit']['message'][:80]}" for c in data[:5]]
+            result = "\n".join(lines)
+        else:
+            result = str(data.get("message", "unexpected response"))
         return {"status": "ok", "result": result}
 
     elif action == "profile":
