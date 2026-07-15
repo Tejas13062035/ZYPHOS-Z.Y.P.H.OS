@@ -162,6 +162,10 @@ def execute_task(task: dict) -> dict:
         from tools.sidecar import speak
         result = speak(text)
 
+    elif "joke" in desc:
+        from plugins.joke import run as joke_run
+        result = joke_run()
+
     else:
         result = {"error": f"unknown task: {desc}"}
 

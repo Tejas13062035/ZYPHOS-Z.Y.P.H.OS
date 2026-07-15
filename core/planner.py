@@ -188,6 +188,16 @@ def plan(goal: str) -> list:
             })
             break
 
+        
+        elif word in ["joke", "jokes"]:
+            tasks.append({
+                "id": str(uuid.uuid4())[:8],
+                "description": "joke",
+                "status": "pending",
+                "result": None
+            })
+            i += 1
+
         else:
             i += 1
     return tasks

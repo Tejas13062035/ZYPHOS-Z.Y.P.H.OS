@@ -2,6 +2,7 @@ import os
 import json
 from tools.sidecar import speak
 from plugins.system_stats import run as stats_run
+from plugins.joke import run as joke_run
 from plugins.security import run as security_run
 from plugins.port_scanner import run as port_scan_run
 from plugins.whatsapp_bulk import run as wa_bulk_run
@@ -36,6 +37,7 @@ SYSTEM_PROMPT_BASE = """You are a task execution engine. Given a task descriptio
 No explanation, no markdown, just raw JSON.
 
 Available tools:
+- joke: {} — get a random programming joke
 - open_app: {"app": str}  → opens Windows app (notepad, chrome, calculator, spotify etc). ALWAYS use this for opening apps, never run_shell for Windows apps.
 - search <query>  → web search, returns top results
 - security: {"action": "password|ip_lookup|dns|whois|breach_check|wifi_info", "target": str}
@@ -75,6 +77,7 @@ TOOL_MAP = {
     "open_app": lambda args: __import__('requests').post('http://127.0.0.1:5000/open_app', json={"app": args.get("app", "")}).json(),
     "look": lambda args: look(args.get("prompt", "What do you see on this screen?")),
     "system_stats": lambda args: stats_run(args),
+    "joke": lambda args: joke_run(),
     "screenshot": lambda args: screenshot(),
     "security": lambda args: security_run(args),
     "text_to_speech": lambda args: speak(args.get("text", "")),
