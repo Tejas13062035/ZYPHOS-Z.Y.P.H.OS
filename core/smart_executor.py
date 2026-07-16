@@ -132,6 +132,7 @@ for _name, _plugin in _plugins.items():
 
 def smart_execute(task: dict) -> dict:
     desc = task.get("description", "")
+    SENSITIVE_TOOLS = ["gmail", "drive", "calendar", "notes", "whatsapp", "delete_file"]
     response = ask(desc, system=_build_system_prompt(), max_tokens=100)
 
     try:
@@ -150,6 +151,14 @@ def smart_execute(task: dict) -> dict:
         clean = response[start:end]
         parsed = json.loads(clean)
         tool = parsed["tool"]
+        if tool in SENSITIVE_TOOLS:
+            from core.voice_auth import verify, is_enrolled
+            if is_enrolled():
+                if not verify():
+                    task["status"] = "done"
+                    task["result"] = {"error": "Voice authentication failed. Access denied."}
+                    speak("Sorry, I could not verify your identity. Access denied.")
+                    return task
         args = parsed.get("args", {})
 
         if tool not in TOOL_MAP:

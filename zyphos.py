@@ -2,6 +2,7 @@ import sys
 import os
 import time
 from tools.stt import listen
+from core.voice_auth import enroll, verify, is_enrolled
 from core.explainer import explain
 from core.chainer import chain
 from core.smart_executor import smart_execute, smart_execute_with_critique
@@ -174,6 +175,10 @@ def main():
 
     if sys.argv[1] == "--explain":
         explain()
+        return
+
+    if sys.argv[1] == "--enroll":
+        enroll()
         return
 
     if sys.argv[1] == "--research":
