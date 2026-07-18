@@ -81,14 +81,15 @@ def _run_joke(args, desc=""):
         match = re.search(r'\b(\d+)\b', desc)
         if match:
             count = int(match.group(1))
+    category = args.get("category") or "Any"  # fallback if empty string
     jokes = []
     for i in range(count):
-        r = joke_run({"count": 1, "category": args.get("category", "Any")})
+        r = joke_run({"count": 1, "category": category})
         joke_text = r.get("joke", "")
         if joke_text:
             jokes.append(joke_text)
-            speak(joke_text)  # uses speak_edge with timestamps now
-            time.sleep(2)    # small gap between jokes
+            speak(joke_text)
+            time.sleep(2)
     return {"status": "ok", "jokes": jokes, "result": "\n".join(jokes)}
 
 TOOL_MAP = {
