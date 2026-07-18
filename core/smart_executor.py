@@ -1,5 +1,7 @@
 import os
 import json
+from typing import Union
+
 from tools.sidecar import speak
 from plugins.system_stats import run as stats_run
 from plugins.joke import run as joke_run
@@ -24,12 +26,16 @@ from tools.sidecar import click, type_text, screenshot, scroll, drag, hotkey
 from tools.filesystem import read_file, write_file, list_dir, delete_file
 from tools.shell import run_shell
 
+
 def _build_system_prompt() -> str:
+    """
+    Build the system prompt that lists all available tools.
+    Dynamically includes any plugins loaded via ``load_plugins``.
+    """
     plugin_lines = ""
     for name, plugin in load_plugins().items():
         args_str = ", ".join(f"{k}: {v}" for k, v in plugin["args"].items())
         plugin_lines += f"\n- {name}: {{{args_str}}}  — {plugin['description']}"
-
     return SYSTEM_PROMPT_BASE + plugin_lines
 
 
@@ -74,16 +80,22 @@ Respond with exactly: {"tool": "tool_name", "args": {...}}"""
 
 
 def _run_joke(args, desc=""):
+    """
+    Retrieve one or more jokes and optionally speak them.
+    """
     import re
     import time
+
     count = args.get("count", 1)
     if count == 1:
+        # If the description contains a number, use it as the count
         match = re.search(r'\b(\d+)\b', desc)
         if match:
             count = int(match.group(1))
-    category = args.get("category") or "Any"  # fallback if empty string
+
+    category = args.get("category") or "Any"
     jokes = []
-    for i in range(count):
+    for _ in range(count):
         r = joke_run({"count": 1, "category": category})
         joke_text = r.get("joke", "")
         if joke_text:
@@ -91,6 +103,7 @@ def _run_joke(args, desc=""):
             speak(joke_text)
             time.sleep(2)
     return {"status": "ok", "jokes": jokes, "result": "\n".join(jokes)}
+
 
 TOOL_MAP = {
     "search": lambda args: {"status": "ok", "result": search_summary(args.get("query", args[0] if isinstance(args, list) else ""))},
@@ -125,19 +138,36 @@ TOOL_MAP = {
     "run_shell": lambda args: run_shell(args["command"]),
 }
 
-# load plugins and merge into TOOL_MAP
+# Load plugins and merge them into TOOL_MAP
 _plugins = load_plugins()
 for _name, _plugin in _plugins.items():
     TOOL_MAP[_name] = _plugin["run"]
 
 
-def smart_execute(task: dict) -> dict:
+def smart_execute(task: Union[dict, str]) -> dict:
+    """
+    Execute a single task description using the LLM to decide which tool to call.
+
+    ``task`` can be either:
+        * a dict with a ``description`` key (the normal case), or
+        * a raw string containing the description.
+
+    The function returns the original task dict enriched with ``status`` and ``result``.
+    """
+    # Normalise ``task`` to a dict with a ``description`` field
+    if isinstance(task, str):
+        task = {"description": task}
+    elif not isinstance(task, dict):
+        raise TypeError("task must be a dict or a string")
+
     desc = task.get("description", "")
-    SENSITIVE_TOOLS = ["gmail", "drive", "calendar", "notes", "whatsapp", "delete_file"]
+    # Tools that require extra verification before execution
+    SENSITIVE_TOOLS = ["gmail", "drive", "calendar", "notes", "whatsapp_bulk", "delete_file"]
+
     response = ask(desc, system=_build_system_prompt(), max_tokens=100)
 
     try:
-        # extract first complete JSON object
+        # Extract the first complete JSON object from the LLM response
         start = response.find("{")
         depth = 0
         end = start
@@ -151,7 +181,9 @@ def smart_execute(task: dict) -> dict:
                     break
         clean = response[start:end]
         parsed = json.loads(clean)
+
         tool = parsed["tool"]
+        # Verify identity for sensitive tools
         if tool in SENSITIVE_TOOLS:
             from core.voice_auth import verify, is_enrolled
             if is_enrolled():
@@ -160,6 +192,7 @@ def smart_execute(task: dict) -> dict:
                     task["result"] = {"error": "Voice authentication failed. Access denied."}
                     speak("Sorry, I could not verify your identity. Access denied.")
                     return task
+
         args = parsed.get("args", {})
 
         if tool not in TOOL_MAP:
@@ -167,6 +200,7 @@ def smart_execute(task: dict) -> dict:
             task["result"] = {"error": f"unknown tool: {tool}"}
             return task
 
+        # ``joke`` is handled specially to allow extra speaking logic
         if tool == "joke":
             result = _run_joke(args, desc)
         else:
@@ -179,14 +213,16 @@ def smart_execute(task: dict) -> dict:
             "args": args
         }
 
-        # auto-speak for conversational goals
-        speak_triggers = ["tell me", "what is", "what are", "read", "who is", "show me", "how many", "where is", "when is"]
+        # Auto‑speak for conversational‑style goals
+        speak_triggers = [
+            "tell me", "what is", "what are", "read", "who is",
+            "show me", "how many", "where is", "when is"
+        ]
         original_goal = desc.lower()
         if any(t in original_goal for t in speak_triggers):
             if tool not in ["joke", "speak", "text_to_speech", "type_text", "screenshot", "click", "hotkey", "music"]:
                 result_text = ""
                 if isinstance(result, dict):
-                    # try summary first, then result, then str
                     result_text = (
                         result.get("summary") or
                         result.get("result") or
@@ -195,20 +231,30 @@ def smart_execute(task: dict) -> dict:
                     )
                 else:
                     result_text = str(result)
+
                 if result_text and len(result_text) > 5:
-                    speak(str(result_text)[:1000])  # cap at 1000 chars to avoid very long TTS
+                    speak(str(result_text)[:1000])  # cap at 1000 chars
+
     except Exception as e:
         task["status"] = "done"
         task["result"] = {"error": f"smart_execute failed: {e}", "raw": response}
 
     return task
 
-def smart_execute_with_critique(task: str, max_retries: int = 2) -> str:
+
+def smart_execute_with_critique(task: Union[dict, str], max_retries: int = 2) -> dict:
+    """
+    Execute a task with optional critique/retry logic.
+
+    Returns the final task dict (including ``status`` and ``result``).
+    """
     for attempt in range(max_retries + 1):
         result = smart_execute(task)
         inner = result.get("result", {})
+        # Build the description for the critique call
+        description = task if isinstance(task, str) else task.get("description", "")
         verdict = critique(
-            task=task if isinstance(task, str) else task.get("description", ""),
+            task=description,
             result=inner.get("result", str(inner)) if isinstance(inner, dict) else str(inner),
             tool=inner.get("tool", "") if isinstance(inner, dict) else "",
             args=inner.get("args", {}) if isinstance(inner, dict) else {}
@@ -216,16 +262,15 @@ def smart_execute_with_critique(task: str, max_retries: int = 2) -> str:
 
         if verdict.get("passed"):
             if attempt > 0:
-                print(f"[CRITIC] Passed on attempt {attempt+1}.")
+                print(f"[CRITIC] Passed on attempt {attempt + 1}.")
             return result
 
         reason = verdict.get("reason", "unknown")
-        print(f"[CRITIC] Attempt {attempt+1} failed: {reason}")
+        print(f"[CRITIC] Attempt {attempt + 1} failed: {reason}")
 
         if attempt < max_retries:
-            print(f"[CRITIC] Retrying ({attempt+2}/{max_retries+1})...")
+            print(f"[CRITIC] Retrying ({attempt + 2}/{max_retries + 1})...")
         else:
             print(f"[CRITIC] Max retries reached. Returning last result.")
 
     return result
-
