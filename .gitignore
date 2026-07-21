@@ -9,3 +9,4 @@ state/
 core/*.swp
 *.swpo
 
+.aider*
