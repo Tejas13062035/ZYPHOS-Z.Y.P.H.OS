@@ -10,3 +10,4 @@ core/*.swp
 *.swpo
 
 .aider*
+state/qrcodes/
