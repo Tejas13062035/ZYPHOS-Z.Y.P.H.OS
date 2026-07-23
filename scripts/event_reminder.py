@@ -50,26 +50,29 @@ def check_events():
 
     events = result.get("events", [])
     now = datetime.now()
+    newly_reminded = []
 
     for event_str in events:
         try:
-            time_part, title = event_str.split(":", 1)
+            time_part, title = event_str.split(": ", 1)
             event_time = datetime.fromisoformat(time_part.strip())
             minutes_until = (event_time.replace(tzinfo=None) - now).total_seconds() / 60
 
             for window in REMINDER_WINDOWS:
                 event_id = f"{time_part}_{title.strip()}_{window}min"
-                if event_id in reminded:
+                if event_id in reminded or event_id in newly_reminded:
                     continue
 
-                lower_bound = window - (CHECK_INTERVAL / 60)
-                if lower_bound <= minutes_until <= window:
-                    msg = f"Reminder: {title.strip()} starts in {window} minutes."
+                if 0 <= minutes_until <= window:
+                    msg = f"Reminder: {title.strip()} starts in about {int(minutes_until)} minutes."
                     log(msg)
                     speak(msg)
-                    mark_reminded(event_id)
+                    newly_reminded.append(event_id)
         except (ValueError, IndexError):
             continue
+
+    for event_id in newly_reminded:
+        mark_reminded(event_id)
 
 
 def main():
