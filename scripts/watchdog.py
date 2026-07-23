@@ -30,6 +30,23 @@ def is_daemon_running():
     except (ValueError, ProcessLookupError, OSError):
         return False
 
+def is_reminder_running():
+    result = subprocess.run(
+        ["pgrep", "-f", "event_reminder.py"],
+        capture_output=True, text=True
+    )
+    return bool(result.stdout.strip())
+
+
+def restart_reminder():
+    log("WATCHDOG: reminder down — restarting...")
+    subprocess.Popen(
+        [VENV_PYTHON, "scripts/event_reminder.py"],
+        cwd=ZYPHOS_DIR,
+        stdout=open(os.path.expanduser("~/zyp/logs/reminder.log"), "a"),
+        stderr=subprocess.STDOUT
+    )
+    log("WATCHDOG: reminder restarted")
 
 def restart_daemon():
     log("WATCHDOG: daemon down — restarting...")
@@ -49,6 +66,12 @@ def main():
             restart_daemon()
         else:
             log("WATCHDOG: daemon OK")
+
+        if not is_reminder_running():
+            restart_reminder()
+        else:
+            log("WATCHDOG: reminder OK")
+
         time.sleep(INTERVAL)
 
 
